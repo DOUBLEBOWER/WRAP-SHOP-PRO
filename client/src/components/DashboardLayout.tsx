@@ -8,7 +8,8 @@ import {
   Archive,
   Calendar as CalendarIcon,
   ShieldCheck,
-  MessageSquare
+  MessageSquare,
+  ShoppingBag
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -28,6 +29,10 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
     { id: 'portal', name: 'Client Proofing Portal', icon: ShieldCheck },
     { id: 'comms', name: 'Comms & Growth Hub', icon: MessageSquare },
   ];
+
+  const handleOpenStore = () => {
+    window.open('/store', '_blank');
+  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background text-foreground overflow-hidden">
@@ -77,6 +82,17 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
               );
             })}
           </nav>
+        </div>
+
+        {/* Store Button */}
+        <div className="px-4 pb-2">
+          <button
+            onClick={handleOpenStore}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-pink-500/10 to-cyan-500/5 border border-pink-500/20 text-pink-400 hover:from-pink-500/20 hover:to-cyan-500/10 transition-all"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Open Online Store
+          </button>
         </div>
 
         {/* Sidebar Footer / Business Status */}
