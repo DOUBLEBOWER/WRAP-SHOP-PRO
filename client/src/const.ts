@@ -40,6 +40,10 @@ export interface Deal {
   workDetails?: string;
   comments?: JobComment[];
   updatedAt: string;
+  // Portal & Proofing extensions
+  proofUrl?: string;
+  proofStatus?: 'pending' | 'approved' | 'rejected';
+  proofNotes?: string;
 }
 
 export interface InvoiceItem {
@@ -66,6 +70,31 @@ export interface Invoice {
   issueDate: string;
   dueDate: string;
   notes?: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  brand: '3M' | 'Avery Dennison' | 'KPMF' | 'Orafol' | 'Suntek' | 'Other';
+  name: string;
+  colorCode: string;
+  finish: 'Gloss' | 'Satin' | 'Matte' | 'Carbon' | 'Chrome' | 'Perforated';
+  sqFtTotal: number;
+  sqFtUsed: number;
+  sqFtRemaining: number;
+  costPerSqFt: number;
+  minAlertThreshold: number; // Send alert if remaining is below this
+}
+
+export interface CalendarEvent {
+  id: string;
+  dealId: string;
+  title: string;
+  customerName: string;
+  type: 'installation' | 'tinting' | 'detailing' | 'proofing';
+  start: string; // YYYY-MM-DD
+  end: string;   // YYYY-MM-DD
+  assignedTech: string;
+  status: 'scheduled' | 'in-progress' | 'completed';
 }
 
 export const STAGES = [
@@ -158,7 +187,10 @@ export const INITIAL_DEALS: Deal[] = [
       { id: 'c1', author: 'Dave', role: 'Print Tech', text: 'Printed panels are cured and laminated with premium cast gloss overlaminate.', timestamp: '2026-05-28 14:30' },
       { id: 'c2', author: 'Mike', role: 'Installer', text: 'Confirmed van is scheduled for clean and prep tomorrow morning.', timestamp: '2026-05-29 09:15' }
     ],
-    updatedAt: '2026-05-28'
+    updatedAt: '2026-05-28',
+    proofUrl: 'https://images.unsplash.com/photo-1506015391300-4802dc74de2e?auto=format&fit=crop&w=800&q=80',
+    proofStatus: 'approved',
+    proofNotes: 'Customer approved proof #2 via portal. Greenlighted for printing.'
   },
   {
     id: 'deal_2',
@@ -179,7 +211,10 @@ export const INITIAL_DEALS: Deal[] = [
     comments: [
       { id: 'c3', author: 'Sarah', role: 'Designer', text: 'Sent proof #1 to events@cainsballroom.com. Awaiting feedback.', timestamp: '2026-05-29 11:00' }
     ],
-    updatedAt: '2026-05-29'
+    updatedAt: '2026-05-29',
+    proofUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+    proofStatus: 'pending',
+    proofNotes: 'Awaiting feedback on typography sizing.'
   },
   {
     id: 'deal_3',
@@ -221,7 +256,9 @@ export const INITIAL_DEALS: Deal[] = [
     comments: [
       { id: 'c5', author: 'Chris', role: 'Detailer', text: 'Hydro dip clearcoat is cured. Looks absolutely killer. Buffing it out now.', timestamp: '2026-05-30 08:30' }
     ],
-    updatedAt: '2026-05-30'
+    updatedAt: '2026-05-30',
+    proofUrl: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80',
+    proofStatus: 'approved'
   },
   {
     id: 'deal_5',
@@ -324,6 +361,20 @@ export const INITIAL_INVOICES: Invoice[] = [
   }
 ];
 
+export const INITIAL_INVENTORY: InventoryItem[] = [
+  { id: 'roll_1', brand: '3M', name: '2080 Gloss Deep Green', colorCode: '#1b4d3e', finish: 'Gloss', sqFtTotal: 250, sqFtUsed: 180, sqFtRemaining: 70, costPerSqFt: 3.5, minAlertThreshold: 100 },
+  { id: 'roll_2', brand: 'Avery Dennison', name: 'SW900 Matte Black', colorCode: '#1a1a1a', finish: 'Matte', sqFtTotal: 250, sqFtUsed: 120, sqFtRemaining: 130, costPerSqFt: 3.2, minAlertThreshold: 80 },
+  { id: 'roll_3', brand: '3M', name: '2080 Gloss Deep Orange', colorCode: '#ff4f00', finish: 'Gloss', sqFtTotal: 250, sqFtUsed: 220, sqFtRemaining: 30, costPerSqFt: 3.5, minAlertThreshold: 100 }, // Under threshold!
+  { id: 'roll_4', brand: 'KPMF', name: 'Satin Nero Metallic', colorCode: '#2f3538', finish: 'Satin', sqFtTotal: 250, sqFtUsed: 50, sqFtRemaining: 200, costPerSqFt: 3.8, minAlertThreshold: 50 },
+  { id: 'roll_5', brand: 'Suntek', name: 'Carbon Window Tint Film 15%', colorCode: '#101214', finish: 'Perforated', sqFtTotal: 500, sqFtUsed: 150, sqFtRemaining: 350, costPerSqFt: 1.5, minAlertThreshold: 150 }
+];
+
+export const INITIAL_EVENTS: CalendarEvent[] = [
+  { id: 'ev_1', dealId: 'deal_1', title: 'Green Pro Ford Transit Install', customerName: 'Green Pro LLC', type: 'installation', start: '2026-06-04', end: '2026-06-05', assignedTech: 'Mike (Installer)', status: 'scheduled' },
+  { id: 'ev_2', dealId: 'deal_4', title: 'Jeep Grand Cherokee Tinting', customerName: 'Sarah Jenkins', type: 'tinting', start: '2026-05-31', end: '2026-05-31', assignedTech: 'Chris (Detailer)', status: 'in-progress' },
+  { id: 'ev_3', dealId: 'deal_2', title: 'Cain\'s Window Graphic Install', customerName: 'Cain\'s Ballroom', type: 'installation', start: '2026-06-09', end: '2026-06-09', assignedTech: 'Mike (Installer)', status: 'scheduled' }
+];
+
 export interface VehicleSpec {
   type: string;
   category: 'Passenger' | 'Commercial' | 'Trailer' | 'Custom';
@@ -362,6 +413,7 @@ export const VEHICLE_DATABASE: VehicleSpec[] = [
   // Custom Option
   { type: 'Custom Spec Vehicle', category: 'Custom', panels: { sides: 0, hood: 0, roof: 0, rear: 0, bumpers: 0 }, complexity: 1.0, estLaborHours: 8 }
 ];
+
 export const SHOP_MEMBERS = [
   { name: 'Sarah', role: 'Designer' },
   { name: 'Dave', role: 'Print Tech' },

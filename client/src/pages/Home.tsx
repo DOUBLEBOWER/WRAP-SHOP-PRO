@@ -3,9 +3,13 @@ import {
   INITIAL_CUSTOMERS, 
   INITIAL_DEALS, 
   INITIAL_INVOICES, 
+  INITIAL_INVENTORY,
+  INITIAL_EVENTS,
   Customer, 
   Deal, 
-  Invoice 
+  Invoice,
+  InventoryItem,
+  CalendarEvent
 } from '../const';
 import DashboardLayout from '../components/DashboardLayout';
 import DashboardOverview from '../components/DashboardOverview';
@@ -15,6 +19,9 @@ import WrapEstimator from '../components/WrapEstimator';
 import InvoiceManager from '../components/InvoiceManager';
 import JobDetailsModal from '../components/JobDetailsModal';
 import NewJobModal from '../components/NewJobModal';
+import InventoryTracker from '../components/InventoryTracker';
+import ShopCalendar from '../components/ShopCalendar';
+import ClientPortal from '../components/ClientPortal';
 import { toast } from 'sonner';
 
 export default function Home() {
@@ -24,6 +31,8 @@ export default function Home() {
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
   const [deals, setDeals] = useState<Deal[]>(INITIAL_DEALS);
   const [invoices, setInvoices] = useState<Invoice[]>(INITIAL_INVOICES);
+  const [inventory, setInventory] = useState<InventoryItem[]>(INITIAL_INVENTORY);
+  const [events, setEvents] = useState<CalendarEvent[]>(INITIAL_EVENTS);
 
   // Modal Control States
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
@@ -125,6 +134,63 @@ export default function Home() {
     }));
   };
 
+  // --- INVENTORY ACTIONS ---
+  const handleAddRoll = (newRoll: InventoryItem) => {
+    setInventory([newRoll, ...inventory]);
+  };
+
+  const handleUpdateRollStock = (id: string, sqFtUsed: number) => {
+    setInventory(prevInv => prevInv.map(item => {
+      if (item.id === id) {
+        const remaining = item.sqFtTotal - sqFtUsed;
+        return {
+          ...item,
+          sqFtUsed,
+          sqFtRemaining: remaining
+        };
+      }
+      return item;
+    }));
+  };
+
+  // --- CALENDAR ACTIONS ---
+  const handleAddEvent = (newEvent: CalendarEvent) => {
+    setEvents([newEvent, ...events]);
+  };
+
+  const handleUpdateEventStatus = (id: string, status: CalendarEvent['status']) => {
+    setEvents(prevEvents => prevEvents.map(ev => {
+      if (ev.id === id) {
+        toast.success(`Booking status updated to ${status.toUpperCase()}`);
+        return { ...ev, status };
+      }
+      return ev;
+    }));
+  };
+
+  // --- CLIENT PORTAL PROOF ACTIONS ---
+  const handleUpdateDealProof = (dealId: string, status: Deal['proofStatus'], notes?: string) => {
+    const updatedDeals = deals.map(deal => {
+      if (deal.id === dealId) {
+        // If approved, let's auto-move the job stage to 'production'!
+        let nextStage = deal.stage;
+        if (status === 'approved') {
+          nextStage = 'production';
+          toast.success(`Job "${deal.title}" automatically moved to MATERIAL PRODUCTION stage!`);
+        }
+        return {
+          ...deal,
+          proofStatus: status,
+          stage: nextStage,
+          ...(notes && { proofNotes: notes }),
+          updatedAt: new Date().toISOString().split('T')[0]
+        };
+      }
+      return deal;
+    });
+    setDeals(updatedDeals);
+  };
+
   // --- HELPERS ---
   const getCustomerForDeal = (customerId: string) => {
     return customers.find(c => c.id === customerId);
@@ -152,6 +218,23 @@ export default function Home() {
         />
       )}
 
+      {activeTab === 'calendar' && (
+        <ShopCalendar
+          events={events}
+          deals={deals}
+          onAddEvent={handleAddEvent}
+          onUpdateEventStatus={handleUpdateEventStatus}
+        />
+      )}
+
+      {activeTab === 'inventory' && (
+        <InventoryTracker
+          inventory={inventory}
+          onAddRoll={handleAddRoll}
+          onUpdateRollStock={handleUpdateRollStock}
+        />
+      )}
+
       {activeTab === 'customers' && (
         <CustomerDatabase
           customers={customers}
@@ -163,30 +246,37 @@ export default function Home() {
 
       {activeTab === 'estimator' && (
         <div className="space-y-8">
-          {/* Sub tabs: Estimator Specs and Invoice Manager */}
-          <div className="space-y-6">
-            <WrapEstimator 
-              customers={customers} 
-              onAddDeal={(deal) => {
-                handleAddDeal(deal);
-                setActiveTab('pipeline');
-              }} 
-            />
+          <WrapEstimator 
+            customers={customers} 
+            onAddDeal={(deal) => {
+              handleAddDeal(deal);
+              setActiveTab('pipeline');
+            }} 
+          />
 
-            <div className="border-t border-white/5 pt-8">
-              <h3 className="text-sm font-semibold tracking-wider uppercase text-cyan-400 mb-4">
-                Estimate & Invoice Management
-              </h3>
-              <InvoiceManager
-                invoices={invoices}
-                customers={customers}
-                onAddInvoice={handleAddInvoice}
-                onUpdateInvoiceStatus={handleUpdateInvoiceStatus}
-                onConvertEstimateToInvoice={handleConvertEstimateToInvoice}
-              />
-            </div>
+          <div className="border-t border-white/5 pt-8">
+            <h3 className="text-sm font-semibold tracking-wider uppercase text-cyan-400 mb-4">
+              Estimate & Invoice Management
+            </h3>
+            <InvoiceManager
+              invoices={invoices}
+              customers={customers}
+              onAddInvoice={handleAddInvoice}
+              onUpdateInvoiceStatus={handleUpdateInvoiceStatus}
+              onConvertEstimateToInvoice={handleConvertEstimateToInvoice}
+            />
           </div>
         </div>
+      )}
+
+      {activeTab === 'portal' && (
+        <ClientPortal
+          deals={deals}
+          customers={customers}
+          invoices={invoices}
+          onUpdateDealProof={handleUpdateDealProof}
+          onUpdateInvoiceStatus={handleUpdateInvoiceStatus}
+        />
       )}
 
       {/* --- MODALS --- */}

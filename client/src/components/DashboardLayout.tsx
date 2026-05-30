@@ -10,7 +10,10 @@ import {
   LogOut, 
   TrendingUp,
   Sliders,
-  Sparkles
+  Sparkles,
+  Archive,
+  Calendar as CalendarIcon,
+  ShieldCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -26,8 +29,11 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard Overview', icon: LayoutDashboard },
     { id: 'pipeline', name: 'Production Kanban', icon: KanbanSquare },
+    { id: 'calendar', name: 'Shop Calendar', icon: CalendarIcon },
+    { id: 'inventory', name: 'Vinyl Inventory', icon: Archive },
     { id: 'customers', name: 'Customer Database', icon: Users },
     { id: 'estimator', name: 'Wrap & Job Estimator', icon: Calculator },
+    { id: 'portal', name: 'Client Proofing Portal', icon: ShieldCheck },
   ];
 
   return (
@@ -53,7 +59,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-4 space-y-1.5">
+          <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[60vh]">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -61,7 +67,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative ${
+                  className={`w-full flex items-center gap-3.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group relative ${
                     isActive
                       ? 'bg-gradient-to-r from-pink-500/10 to-purple-500/5 text-pink-400 border border-pink-500/20 shadow-inner'
                       : 'text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent'
@@ -69,7 +75,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
                 >
                   {/* Active Indicator bar */}
                   {isActive && (
-                    <div className="absolute left-0 top-3 bottom-3 w-1 rounded-r bg-pink-500 shadow-md shadow-pink-500/50" />
+                    <div className="absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r bg-pink-500 shadow-md shadow-pink-500/50" />
                   )}
                   <Icon className={`h-4 w-4 transition-transform duration-200 group-hover:scale-110 ${
                     isActive ? 'text-pink-400' : 'text-muted-foreground group-hover:text-cyan-400'
@@ -89,7 +95,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span className="text-[11px] font-semibold tracking-wider text-cyan-400 uppercase">
+              <span className="text-[10px] font-semibold tracking-wider text-cyan-400 uppercase">
                 TULSA SHOP ONLINE
               </span>
             </div>
