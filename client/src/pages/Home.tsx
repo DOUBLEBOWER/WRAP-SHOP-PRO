@@ -22,9 +22,11 @@ import NewJobModal from '../components/NewJobModal';
 import InventoryTracker from '../components/InventoryTracker';
 import ShopCalendar from '../components/ShopCalendar';
 import ClientPortal from '../components/ClientPortal';
+import CommunicationsHub from '../components/CommunicationsHub';
 import { toast } from 'sonner';
 
 export default function Home() {
+
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
   // Core Reactive States
@@ -276,6 +278,16 @@ export default function Home() {
           invoices={invoices}
           onUpdateDealProof={handleUpdateDealProof}
           onUpdateInvoiceStatus={handleUpdateInvoiceStatus}
+        />
+      )}
+
+      {activeTab === 'comms' && (
+        <CommunicationsHub
+          customers={customers}
+          deals={deals}
+          invoices={invoices}
+          onAddCustomer={handleAddCustomer}
+          onAddDeal={handleAddDeal}
         />
       )}
 

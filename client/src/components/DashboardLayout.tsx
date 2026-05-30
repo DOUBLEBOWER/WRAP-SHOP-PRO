@@ -1,21 +1,15 @@
 import React from 'react';
-import { useLocation } from 'wouter';
 import { 
   LayoutDashboard, 
   Users, 
   KanbanSquare, 
   Calculator, 
-  Printer, 
-  Activity, 
-  LogOut, 
-  TrendingUp,
-  Sliders,
-  Sparkles,
+  Printer,
   Archive,
   Calendar as CalendarIcon,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -24,8 +18,6 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children, activeTab, setActiveTab }: DashboardLayoutProps) {
-  const [location] = useLocation();
-
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard Overview', icon: LayoutDashboard },
     { id: 'pipeline', name: 'Production Kanban', icon: KanbanSquare },
@@ -34,6 +26,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
     { id: 'customers', name: 'Customer Database', icon: Users },
     { id: 'estimator', name: 'Wrap & Job Estimator', icon: Calculator },
     { id: 'portal', name: 'Client Proofing Portal', icon: ShieldCheck },
+    { id: 'comms', name: 'Comms & Growth Hub', icon: MessageSquare },
   ];
 
   return (
@@ -73,7 +66,6 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
                       : 'text-muted-foreground hover:text-foreground hover:bg-white/5 border border-transparent'
                   }`}
                 >
-                  {/* Active Indicator bar */}
                   {isActive && (
                     <div className="absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r bg-pink-500 shadow-md shadow-pink-500/50" />
                   )}
@@ -113,11 +105,8 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-y-auto relative">
-        {/* Glowing Ambient Background blobs */}
         <div className="absolute top-[-10%] left-[20%] w-[35rem] h-[35rem] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[10%] w-[40rem] h-[40rem] rounded-full bg-pink-500/5 blur-[150px] pointer-events-none" />
-
-        {/* Content */}
         <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto relative z-10">
           {children}
         </div>
