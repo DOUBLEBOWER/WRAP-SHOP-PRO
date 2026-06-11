@@ -17,9 +17,11 @@ import {
   ShieldCheck,
   Sparkles,
   ChevronRight,
-  Package
+  Package,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useStoreCheckout } from '../hooks/useStripeCheckout';
 
 export default function Store() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -53,6 +55,7 @@ export default function Store() {
 
   const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const { checkout: stripeCheckout, isLoading: stripeLoading } = useStoreCheckout();
 
   const handleAddToCart = (product: Product, size?: string, color?: string, text?: string) => {
     const existingIndex = cart.findIndex(
@@ -88,13 +91,14 @@ export default function Store() {
     setCheckoutStep('confirm');
   };
 
-  const handleSimulateStripePayment = () => {
-    toast.success('Order placed! You will receive a confirmation email shortly. Thank you for shopping with All-Pro Coast 2 Coast!');
-    setCart([]);
-    setCartOpen(false);
-    setCheckoutStep('cart');
-    setFirstName(''); setLastName(''); setEmail(''); setPhone('');
-    setAddress(''); setCity(''); setState(''); setZip('');
+  const handleSimulateStripePayment = async () => {
+    const stripeItems = cart.map(item => ({
+      name: item.product.name + (item.selectedSize ? ` (${item.selectedSize})` : '') + (item.selectedColor ? ` - ${item.selectedColor}` : ''),
+      price: item.product.price,
+      quantity: item.quantity,
+      description: item.customText ? `Custom: ${item.customText}` : item.product.category
+    }));
+    await stripeCheckout(stripeItems, email || undefined, `${firstName} ${lastName}`.trim() || undefined);
   };
 
   const featuredProducts = PRODUCTS.filter(p => p.featured);
@@ -104,17 +108,13 @@ export default function Store() {
       {/* ===== TOP NAV ===== */}
       <header className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-tr from-pink-500 via-purple-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-pink-500/20">
-              <Printer className="h-4 w-4 text-white" />
-            </div>
-            <div>
-              <h1 className="font-black text-sm tracking-wider bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                COAST 2 COAST
-              </h1>
-              <p className="text-[9px] text-muted-foreground tracking-widest uppercase">Custom Print Shop</p>
-            </div>
-          </div>
+          <a href="/" className="flex items-center">
+            <img
+              src="/manus-storage/c2c_logo_d01c1ec7.webp"
+              alt="All-Pro Coast 2 Coast LLC"
+              className="h-10 w-auto object-contain"
+            />
+          </a>
 
           {/* Search */}
           <div className="relative hidden md:block flex-1 max-w-sm">
@@ -598,10 +598,14 @@ export default function Store() {
                 <div className="p-4 border-t border-white/5">
                   <Button
                     onClick={handleSimulateStripePayment}
+                    disabled={stripeLoading}
                     className="w-full bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:via-purple-700 hover:to-cyan-600 text-white rounded-xl font-bold py-5"
                   >
-                    <ShieldCheck className="h-4 w-4 mr-2" />
-                    Place Order — ${cartTotal.toFixed(2)}
+                    {stripeLoading ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Opening Stripe Checkout...</>
+                    ) : (
+                      <><ShieldCheck className="h-4 w-4 mr-2" /> Pay Securely — ${cartTotal.toFixed(2)}</>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -614,12 +618,7 @@ export default function Store() {
       <footer className="border-t border-white/5 bg-black/30 mt-16">
         <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-xs text-muted-foreground">
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-pink-500 to-cyan-400 flex items-center justify-center">
-                <Printer className="h-4 w-4 text-white" />
-              </div>
-              <span className="font-black text-sm text-foreground">ALL-PRO COAST 2 COAST</span>
-            </div>
+            <img src="/manus-storage/c2c_logo_d01c1ec7.webp" alt="All-Pro Coast 2 Coast LLC" className="h-10 w-auto object-contain" />
             <p>Tulsa's premier custom print shop for vehicle wraps, stickers, apparel, and more.</p>
             <p className="font-mono text-cyan-400">(918) 555-0199</p>
           </div>

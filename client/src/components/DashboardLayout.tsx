@@ -1,4 +1,5 @@
 import React from 'react';
+import NotificationBell from './NotificationBell';
 import { 
   LayoutDashboard, 
   Users, 
@@ -30,9 +31,8 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
     { id: 'comms', name: 'Comms & Growth Hub', icon: MessageSquare },
   ];
 
-  const handleOpenStore = () => {
-    window.open('/store', '_blank');
-  };
+  const handleOpenStore = () => window.open('/store', '_blank');
+  const handleOpenLanding = () => window.open('/', '_blank');
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background text-foreground overflow-hidden">
@@ -40,20 +40,15 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
       <aside className="w-full md:w-64 flex-shrink-0 bg-black/40 backdrop-blur-xl border-b md:border-b-0 md:border-r border-white/5 flex flex-col justify-between z-10">
         <div>
           {/* Header/Logo */}
-          <div className="p-6 border-b border-white/5">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-tr from-pink-500 via-purple-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-pink-500/20">
-                <Printer className="h-5 w-5 text-white animate-pulse" />
-              </div>
-              <div>
-                <h1 className="font-bold text-base tracking-wider bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                  COAST 2 COAST
-                </h1>
-                <p className="text-[10px] font-semibold text-cyan-400/80 tracking-widest uppercase">
-                  ALL-PRO CRM
-                </p>
-              </div>
-            </div>
+          <div className="p-4 border-b border-white/5">
+            <img
+              src="/manus-storage/c2c_logo_d01c1ec7.webp"
+              alt="All-Pro Coast 2 Coast LLC"
+              className="h-10 w-auto object-contain"
+            />
+            <p className="text-[9px] font-semibold text-cyan-400/70 tracking-widest uppercase mt-1 pl-1">
+              CRM Dashboard
+            </p>
           </div>
 
           {/* Navigation Links */}
@@ -84,14 +79,28 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
           </nav>
         </div>
 
-        {/* Store Button */}
-        <div className="px-4 pb-2">
+        {/* Quick Access Buttons */}
+        <div className="px-4 pb-2 space-y-2">
           <button
             onClick={handleOpenStore}
             className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-pink-500/10 to-cyan-500/5 border border-pink-500/20 text-pink-400 hover:from-pink-500/20 hover:to-cyan-500/10 transition-all"
           >
             <ShoppingBag className="h-4 w-4" />
             Open Online Store
+          </button>
+          <button
+            onClick={() => window.open('/book', '_blank')}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500/10 to-purple-500/5 border border-cyan-500/20 text-cyan-400 hover:from-cyan-500/20 hover:to-purple-500/10 transition-all"
+          >
+            <CalendarIcon className="h-4 w-4" />
+            Customer Booking Page
+          </button>
+          <button
+            onClick={() => window.open('/team', '_blank')}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-500/10 to-pink-500/5 border border-purple-500/20 text-purple-400 hover:from-purple-500/20 hover:to-pink-500/10 transition-all"
+          >
+            <Users className="h-4 w-4" />
+            Team Login Portal
           </button>
         </div>
 
@@ -119,8 +128,12 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
         </div>
       </aside>
 
-      {/* Main Content Area */}
+        {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-y-auto relative">
+        {/* Top bar with notification bell */}
+        <div className="flex justify-end items-center px-6 md:px-8 pt-5 pb-0 relative z-20">
+          <NotificationBell onNavigate={setActiveTab} />
+        </div>
         <div className="absolute top-[-10%] left-[20%] w-[35rem] h-[35rem] rounded-full bg-cyan-500/5 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[10%] w-[40rem] h-[40rem] rounded-full bg-pink-500/5 blur-[150px] pointer-events-none" />
         <div className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto relative z-10">

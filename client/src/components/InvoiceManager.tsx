@@ -16,9 +16,11 @@ import {
   X, 
   DollarSign, 
   FileCheck,
-  Calendar
+  Calendar,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useInvoiceCheckout } from '../hooks/useStripeCheckout';
 
 interface InvoiceManagerProps {
   invoices: Invoice[];
@@ -37,6 +39,19 @@ export default function InvoiceManager({
 }: InvoiceManagerProps) {
   const [activeTab, setActiveTab] = useState<'list' | 'create'>('list');
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const { checkout: invoiceCheckout, isLoading: invoiceCheckoutLoading } = useInvoiceCheckout();
+
+  const handleStripeInvoicePayment = async (inv: Invoice) => {
+    const cust = customers.find(c => c.id === inv.customerId);
+    const custName = cust?.company !== 'Personal Custom' ? cust?.company : cust?.name;
+    await invoiceCheckout(
+      inv.invoiceNumber,
+      inv.total,
+      `Payment for ${inv.items.map(i => i.description).join(', ').substring(0, 100)}`,
+      cust?.email || undefined,
+      custName || undefined
+    );
+  };
 
   // New Invoice Form State
   const [docType, setDocType] = useState<'estimate' | 'invoice'>('estimate');
@@ -253,10 +268,11 @@ export default function InvoiceManager({
                               {inv.type === 'invoice' && inv.status === 'unpaid' && (
                                 <Button
                                   size="sm"
-                                  onClick={() => onUpdateInvoiceStatus(inv.id, 'paid')}
+                                  onClick={() => handleStripeInvoicePayment(inv)}
+                                  disabled={invoiceCheckoutLoading}
                                   className="h-7 px-2 text-[10px] rounded-lg bg-pink-600 hover:bg-pink-700 text-white"
                                 >
-                                  Mark Paid
+                                  {invoiceCheckoutLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Pay via Stripe'}
                                 </Button>
                               )}
                             </div>

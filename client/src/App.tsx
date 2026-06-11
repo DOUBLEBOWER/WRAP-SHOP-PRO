@@ -4,16 +4,28 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
+import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Store from "./pages/Store";
+import Booking from "./pages/Booking";
+import TeamPortal from "./pages/TeamPortal";
 
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
+      {/* Public Landing Page — main entry point */}
+      <Route path={"/"} component={Landing} />
+
+      {/* CRM Dashboard — owner/admin use */}
+      <Route path={"/crm"} component={Home} />
+
+      {/* Public-facing pages */}
       <Route path={"/store"} component={Store} />
+      <Route path={"/book"} component={Booking} />
+      <Route path={"/team"} component={TeamPortal} />
+
       <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
   );
@@ -23,10 +35,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <NotificationProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </NotificationProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

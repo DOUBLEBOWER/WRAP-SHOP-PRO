@@ -23,11 +23,13 @@ import InventoryTracker from '../components/InventoryTracker';
 import ShopCalendar from '../components/ShopCalendar';
 import ClientPortal from '../components/ClientPortal';
 import CommunicationsHub from '../components/CommunicationsHub';
+import { useNotifications } from '../contexts/NotificationContext';
 import { toast } from 'sonner';
 
 export default function Home() {
 
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const { addNotification } = useNotifications();
 
   // Core Reactive States
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
@@ -53,6 +55,12 @@ export default function Home() {
       updatedAt: new Date().toISOString().split('T')[0]
     };
     setDeals([newDeal, ...deals]);
+    addNotification({
+      type: 'job_update',
+      title: 'New Job Added to Pipeline',
+      message: `"${newDealData.title}" has been added to the Inquiry stage.`,
+      link: 'pipeline'
+    });
   };
 
   const handleUpdateDealStage = (dealId: string, newStage: Deal['stage']) => {
@@ -111,6 +119,12 @@ export default function Home() {
             return c;
           }));
           toast.success(`Marked Invoice ${inv.invoiceNumber} as PAID. Customer balance updated!`);
+          addNotification({
+            type: 'payment',
+            title: 'Payment Received',
+            message: `Invoice ${inv.invoiceNumber} marked as paid — $${inv.total.toFixed(2)} collected.`,
+            link: 'estimator'
+          });
         }
         return { ...inv, status };
       }
