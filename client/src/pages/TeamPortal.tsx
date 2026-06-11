@@ -25,11 +25,12 @@ import { toast } from 'sonner';
 
 // ---- Team Member Credentials ----
 const TEAM_MEMBERS = [
+  { id: 'emp_0', name: 'Stephanie', role: 'Manager', pin: '5555', color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/20', emoji: '⭐' },
   { id: 'emp_1', name: 'Sarah Johnson', role: 'Designer', pin: '1111', color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', emoji: '🎨' },
   { id: 'emp_2', name: 'Dave Martinez', role: 'Print Tech', pin: '2222', color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20', emoji: '🖨️' },
   { id: 'emp_3', name: 'Mike Thompson', role: 'Installer', pin: '3333', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', emoji: '🔧' },
   { id: 'emp_4', name: 'Chris Davis', role: 'Detailer', pin: '4444', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', emoji: '✨' },
-  { id: 'emp_5', name: 'All-Pro Owner', role: 'Manager', pin: '0000', color: 'text-pink-400', bg: 'bg-pink-500/10 border-pink-500/20', emoji: '👑' }
+  { id: 'emp_5', name: 'All-Pro Owner', role: 'Manager', pin: '0000', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', emoji: '👑' }
 ];
 
 type TeamMember = typeof TEAM_MEMBERS[0];
@@ -180,7 +181,7 @@ export default function TeamPortal() {
                       autoFocus
                     />
                     {pinError && <p className="text-xs text-red-400 text-center">Incorrect PIN. Try again.</p>}
-                    <p className="text-[10px] text-muted-foreground text-center">Demo PINs: Sarah=1111, Dave=2222, Mike=3333, Chris=4444, Owner=0000</p>
+                    <p className="text-[10px] text-muted-foreground text-center">PINs: Stephanie=5555, Sarah=1111, Dave=2222, Mike=3333, Chris=4444, Owner=0000</p>
                   </div>
                   <Button type="submit" disabled={pin.length < 4}
                     className="w-full bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold py-5">
