@@ -10,7 +10,8 @@ import {
   Calendar as CalendarIcon,
   ShieldCheck,
   MessageSquare,
-  ShoppingBag
+  ShoppingBag,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -29,6 +30,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
     { id: 'estimator', name: 'Wrap & Job Estimator', icon: Calculator },
     { id: 'portal', name: 'Client Proofing Portal', icon: ShieldCheck },
     { id: 'comms', name: 'Comms & Growth Hub', icon: MessageSquare },
+    { id: 'portfolio', name: 'Portfolio Manager', icon: ImageIcon },
   ];
 
   const handleOpenStore = () => window.open('/store', '_blank');

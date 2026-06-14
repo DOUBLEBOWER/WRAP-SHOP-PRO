@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePortfolio, PortfolioItem } from '../contexts/PortfolioContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -22,56 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const PORTFOLIO = [
-  {
-    id: 1,
-    title: 'Green Pro Fleet Van Wrap',
-    category: 'Vehicle Wrap',
-    img: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 2,
-    title: 'Cain\'s Ballroom Window Graphics',
-    category: 'Storefront',
-    img: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 3,
-    title: 'Custom Hydro Dip Helmet',
-    category: 'Hydro Dipping',
-    img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 4,
-    title: 'Tulsa Burger Co. Staff Shirts',
-    category: 'Custom Apparel',
-    img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 5,
-    title: '24ft Trailer Full Wrap',
-    category: 'Vehicle Wrap',
-    img: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 6,
-    title: 'Route 66 Storefront Signage',
-    category: 'Decals & Signs',
-    img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 7,
-    title: 'Chrome Die-Cut Sticker Pack',
-    category: 'Custom Stickers',
-    img: 'https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    id: 8,
-    title: 'Window Tinting — Jeep Grand Cherokee',
-    category: 'Window Tinting',
-    img: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=800&q=80'
-  }
-];
+// Portfolio is now managed via PortfolioContext — see /crm Portfolio Manager tab
 
 const SERVICES = [
   { icon: '🚗', name: 'Vehicle Wraps', desc: 'Full & partial wraps for cars, trucks, vans, trailers, and fleet vehicles. 3M & Avery certified.' },
@@ -99,8 +51,9 @@ export default function Landing() {
   const [contactService, setContactService] = useState('');
   const [contactMessage, setContactMessage] = useState('');
 
+  const { items: portfolioItems } = usePortfolio();
   const portfolioCategories = ['All', 'Vehicle Wrap', 'Storefront', 'Custom Apparel', 'Hydro Dipping', 'Custom Stickers', 'Window Tinting'];
-  const filteredPortfolio = portfolioFilter === 'All' ? PORTFOLIO : PORTFOLIO.filter(p => p.category === portfolioFilter);
+  const filteredPortfolio = portfolioFilter === 'All' ? portfolioItems : portfolioItems.filter(p => p.category === portfolioFilter);
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -316,7 +269,7 @@ export default function Landing() {
 
           {/* Portfolio Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredPortfolio.map(item => (
+            {filteredPortfolio.map((item: PortfolioItem) => (
               <div key={item.id} className="group relative aspect-square rounded-2xl overflow-hidden border border-white/5 cursor-pointer">
                 <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">

@@ -23,6 +23,7 @@ import InventoryTracker from '../components/InventoryTracker';
 import ShopCalendar from '../components/ShopCalendar';
 import ClientPortal from '../components/ClientPortal';
 import CommunicationsHub from '../components/CommunicationsHub';
+import PortfolioManager from '../components/PortfolioManager';
 import { useNotifications } from '../contexts/NotificationContext';
 import { toast } from 'sonner';
 
@@ -303,6 +304,10 @@ export default function Home() {
           onAddCustomer={handleAddCustomer}
           onAddDeal={handleAddDeal}
         />
+      )}
+
+      {activeTab === 'portfolio' && (
+        <PortfolioManager />
       )}
 
       {/* --- MODALS --- */}
