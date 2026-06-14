@@ -198,6 +198,92 @@ export default function Store() {
         </div>
       </div>
 
+      {/* ===== DESIGN TOOL HERO CARDS ===== */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="text-center mb-6 space-y-1">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Powered by AI</p>
+          <h3 className="text-2xl md:text-3xl font-black text-foreground">Design Your Own — Online, Instantly</h3>
+          <p className="text-sm text-muted-foreground">Use our free AI design tools to visualize your project before you order.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* Wrap Designer Card */}
+          <a href="/wrap-designer" className="group block">
+            <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/40 via-black/60 to-purple-950/40 p-8 h-full min-h-[260px] flex flex-col justify-between transition-all duration-300 hover:border-cyan-400/50 hover:shadow-2xl hover:shadow-cyan-500/10 hover:scale-[1.01]">
+              {/* Glow blobs */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/10 rounded-full blur-[60px] pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none" />
+
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-3xl shadow-lg shadow-cyan-500/20">
+                    🚗
+                  </div>
+                  <div>
+                    <Badge className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 text-[10px] font-bold mb-1">FREE AI TOOL</Badge>
+                    <h4 className="text-xl font-black text-white leading-tight">AI Wrap Designer</h4>
+                  </div>
+                </div>
+                <p className="text-sm text-cyan-100/70 leading-relaxed">
+                  Select your vehicle year, make &amp; model. Upload your logo. Our AI generates a photorealistic, production-ready wrap mockup in seconds.
+                </p>
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  {['🚙 All makes & models supported', '🎨 8 professional design styles', '📸 High-resolution download', '🏢 Add your logo & business info'].map(f => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="relative z-10 mt-6 flex items-center justify-between">
+                <span className="text-xs font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors flex items-center gap-1.5">
+                  Start Designing Your Wrap
+                  <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+                </span>
+                <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">No account needed</Badge>
+              </div>
+            </div>
+          </a>
+
+          {/* Sticker Designer Card */}
+          <a href="/sticker-designer" className="group block">
+            <div className="relative overflow-hidden rounded-3xl border border-pink-500/20 bg-gradient-to-br from-pink-950/40 via-black/60 to-purple-950/40 p-8 h-full min-h-[260px] flex flex-col justify-between transition-all duration-300 hover:border-pink-400/50 hover:shadow-2xl hover:shadow-pink-500/10 hover:scale-[1.01]">
+              {/* Glow blobs */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500/10 rounded-full blur-[60px] pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none" />
+
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-3xl shadow-lg shadow-pink-500/20">
+                    🎨
+                  </div>
+                  <div>
+                    <Badge className="bg-pink-500/10 text-pink-400 border-pink-500/20 text-[10px] font-bold mb-1">FREE DESIGN TOOL</Badge>
+                    <h4 className="text-xl font-black text-white leading-tight">Custom Sticker Designer</h4>
+                  </div>
+                </div>
+                <p className="text-sm text-pink-100/70 leading-relaxed">
+                  Upload your image or logo, pick your shape, size, and finish. See a live preview and order premium die-cut vinyl stickers directly.
+                </p>
+                <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  {['✂️ Circle, square, die-cut shapes', '✨ Gloss, matte, holographic finishes', '📦 Bulk discounts up to 25% off', '🖼️ Live preview before you order'].map(f => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="relative z-10 mt-6 flex items-center justify-between">
+                <span className="text-xs font-bold text-pink-400 group-hover:text-pink-300 transition-colors flex items-center gap-1.5">
+                  Start Designing Your Sticker
+                  <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+                </span>
+                <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">Ships in 3–5 days</Badge>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
       {/* ===== MAIN SHOP AREA ===== */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
         {/* Category Filter */}
