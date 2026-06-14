@@ -24,6 +24,7 @@ import ShopCalendar from '../components/ShopCalendar';
 import ClientPortal from '../components/ClientPortal';
 import CommunicationsHub from '../components/CommunicationsHub';
 import PortfolioManager from '../components/PortfolioManager';
+import Bookkeeping from '../components/Bookkeeping';
 import { useNotifications } from '../contexts/NotificationContext';
 import { toast } from 'sonner';
 
@@ -308,6 +309,10 @@ export default function Home() {
 
       {activeTab === 'portfolio' && (
         <PortfolioManager />
+      )}
+
+      {activeTab === 'bookkeeping' && (
+        <Bookkeeping />
       )}
 
       {/* --- MODALS --- */}

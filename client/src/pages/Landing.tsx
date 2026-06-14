@@ -93,6 +93,16 @@ export default function Landing() {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-2">
+            <a href="/sticker-designer">
+              <Button variant="outline" className="border-pink-500/30 text-pink-400 hover:bg-pink-500/10 rounded-xl text-xs font-bold h-9 gap-1.5">
+                🎨 Design Sticker
+              </Button>
+            </a>
+            <a href="/wrap-designer">
+              <Button variant="outline" className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 rounded-xl text-xs font-bold h-9 gap-1.5">
+                🚗 Design Wrap
+              </Button>
+            </a>
             <a href="/store">
               <Button variant="outline" className="border-white/10 rounded-xl text-xs font-bold h-9 gap-1.5">
                 <ShoppingBag className="h-3.5 w-3.5" /> Shop

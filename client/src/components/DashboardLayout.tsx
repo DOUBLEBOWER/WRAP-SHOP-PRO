@@ -11,7 +11,8 @@ import {
   ShieldCheck,
   MessageSquare,
   ShoppingBag,
-  Image as ImageIcon
+  Image as ImageIcon,
+  BookOpen
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -31,6 +32,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
     { id: 'portal', name: 'Client Proofing Portal', icon: ShieldCheck },
     { id: 'comms', name: 'Comms & Growth Hub', icon: MessageSquare },
     { id: 'portfolio', name: 'Portfolio Manager', icon: ImageIcon },
+    { id: 'bookkeeping', name: 'Bookkeeping', icon: BookOpen },
   ];
 
   const handleOpenStore = () => window.open('/store', '_blank');

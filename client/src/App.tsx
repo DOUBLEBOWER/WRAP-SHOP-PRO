@@ -11,6 +11,8 @@ import Home from "./pages/Home";
 import Store from "./pages/Store";
 import Booking from "./pages/Booking";
 import TeamPortal from "./pages/TeamPortal";
+import StickerGenerator from "./pages/StickerGenerator";
+import WrapDesigner from "./pages/WrapDesigner";
 
 function Router() {
   return (
@@ -25,6 +27,8 @@ function Router() {
       <Route path={"/store"} component={Store} />
       <Route path={"/book"} component={Booking} />
       <Route path={"/team"} component={TeamPortal} />
+      <Route path={"/sticker-designer"} component={StickerGenerator} />
+      <Route path={"/wrap-designer"} component={WrapDesigner} />
 
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
