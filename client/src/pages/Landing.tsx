@@ -247,6 +247,101 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ===== AI DESIGN TOOLS SECTION ===== */}
+      <section className="py-16 px-4 bg-gradient-to-b from-black/30 to-background">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="text-center space-y-3">
+            <Badge className="bg-gradient-to-r from-pink-500/10 to-cyan-500/10 text-pink-400 border-pink-500/20 text-xs font-bold px-4 py-1.5 rounded-full">
+              ✨ Powered by AI
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-black text-foreground">Design Your Own — Free, Online, Instantly</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto text-sm">
+              Use our free AI-powered design tools to visualize your project before you commit. No account required.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Wrap Designer Card */}
+            <a href="/wrap-designer" className="group block">
+              <div className="relative overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/50 via-black/70 to-purple-950/40 p-8 h-full min-h-[280px] flex flex-col justify-between transition-all duration-300 hover:border-cyan-400/60 hover:shadow-2xl hover:shadow-cyan-500/15 hover:scale-[1.01]">
+                <div className="absolute top-0 right-0 w-56 h-56 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/10 rounded-full blur-[60px] pointer-events-none" />
+
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-4xl shadow-xl shadow-cyan-500/25 shrink-0">
+                      🚗
+                    </div>
+                    <div>
+                      <Badge className="bg-cyan-500/15 text-cyan-300 border-cyan-500/30 text-[10px] font-bold mb-1.5">FREE AI TOOL</Badge>
+                      <h3 className="text-2xl font-black text-white leading-tight">AI Wrap Designer</h3>
+                    </div>
+                  </div>
+                  <p className="text-sm text-cyan-100/70 leading-relaxed">
+                    Select your vehicle year, make &amp; model. Upload your logo and brand colors. Our AI generates a photorealistic, production-ready wrap mockup in seconds — ready to download in high resolution.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['🚙 All makes & models', '🎨 8 design styles', '📸 HD download', '🏢 Add your logo'].map(f => (
+                      <div key={f} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="relative z-10 mt-6 flex items-center justify-between pt-4 border-t border-white/5">
+                  <span className="text-sm font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                    Start Designing Your Wrap
+                    <span className="group-hover:translate-x-1.5 transition-transform inline-block">→</span>
+                  </span>
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">No account needed</Badge>
+                </div>
+              </div>
+            </a>
+
+            {/* Sticker Designer Card */}
+            <a href="/sticker-designer" className="group block">
+              <div className="relative overflow-hidden rounded-3xl border border-pink-500/20 bg-gradient-to-br from-pink-950/50 via-black/70 to-purple-950/40 p-8 h-full min-h-[280px] flex flex-col justify-between transition-all duration-300 hover:border-pink-400/60 hover:shadow-2xl hover:shadow-pink-500/15 hover:scale-[1.01]">
+                <div className="absolute top-0 right-0 w-56 h-56 bg-pink-500/10 rounded-full blur-[80px] pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-[60px] pointer-events-none" />
+
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-4xl shadow-xl shadow-pink-500/25 shrink-0">
+                      🎨
+                    </div>
+                    <div>
+                      <Badge className="bg-pink-500/15 text-pink-300 border-pink-500/30 text-[10px] font-bold mb-1.5">FREE DESIGN TOOL</Badge>
+                      <h3 className="text-2xl font-black text-white leading-tight">Custom Sticker Designer</h3>
+                    </div>
+                  </div>
+                  <p className="text-sm text-pink-100/70 leading-relaxed">
+                    Upload your image or logo, choose your shape, size, and finish. See a live preview update instantly and order premium die-cut vinyl stickers with bulk discounts.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['✂️ Die-cut any shape', '✨ Holographic finish', '📦 Up to 25% bulk off', '🖼️ Live preview'].map(f => (
+                      <div key={f} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="relative z-10 mt-6 flex items-center justify-between pt-4 border-t border-white/5">
+                  <span className="text-sm font-bold text-pink-400 group-hover:text-pink-300 transition-colors flex items-center gap-2">
+                    Start Designing Your Sticker
+                    <span className="group-hover:translate-x-1.5 transition-transform inline-block">→</span>
+                  </span>
+                  <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">Ships in 3–5 days</Badge>
+                </div>
+              </div>
+            </a>
+
+          </div>
+        </div>
+      </section>
+
       {/* ===== PORTFOLIO SECTION ===== */}
       <section id="portfolio" className="py-20 px-4 bg-black/20 border-y border-white/5">
         <div className="max-w-7xl mx-auto space-y-10">
