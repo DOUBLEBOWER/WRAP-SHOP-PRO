@@ -180,6 +180,12 @@ export default function Landing() {
               All-Pro Coast 2 Coast LLC is Tulsa's premier custom print shop. From full vehicle wraps and window tinting to custom apparel, hydro dipping, and storefront graphics — we bring your brand to life.
             </p>
             <div className="flex flex-wrap gap-3">
+              <a href="/wrap-designer">
+                <Button className="bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 hover:from-cyan-600 hover:via-blue-700 hover:to-purple-700 text-white rounded-xl font-bold px-6 py-5 text-sm gap-2 shadow-xl shadow-cyan-500/20">
+                  <span className="text-base">🚗</span>
+                  Design Your Wrap — Free
+                </Button>
+              </a>
               <a href="/book">
                 <Button className="bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:via-purple-700 hover:to-cyan-600 text-white rounded-xl font-bold px-6 py-5 text-sm gap-2 shadow-xl shadow-pink-500/20">
                   <Calendar className="h-4 w-4" />
