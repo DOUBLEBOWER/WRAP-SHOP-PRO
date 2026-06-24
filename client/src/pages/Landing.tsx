@@ -82,6 +82,7 @@ export default function Landing() {
             {[
               { label: 'Portfolio', href: '#portfolio' },
               { label: 'Services', href: '#services' },
+              { label: 'Design Templates', href: '/design-templates' },
               { label: 'Reviews', href: '#reviews' },
               { label: 'Contact', href: '#contact' }
             ].map(item => (
@@ -130,10 +131,10 @@ export default function Landing() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-white/5 bg-black/90 px-4 py-4 space-y-2">
-            {['#portfolio', '#services', '#reviews', '#contact'].map((href, i) => (
+            {['#portfolio', '#services', '/design-templates', '#reviews', '#contact'].map((href, i) => (
               <a key={href} href={href} onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-white/5">
-                {['Portfolio', 'Services', 'Reviews', 'Contact'][i]}
+                {['Portfolio', 'Services', 'Design Templates', 'Reviews', 'Contact'][i]}
               </a>
             ))}
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/5">

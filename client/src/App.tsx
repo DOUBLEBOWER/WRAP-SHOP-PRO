@@ -13,6 +13,7 @@ import Booking from "./pages/Booking";
 import TeamPortal from "./pages/TeamPortal";
 import StickerGenerator from "./pages/StickerGenerator";
 import WrapDesigner from "./pages/WrapDesigner";
+import DesignTemplates from "./pages/DesignTemplates";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       <Route path={"/team"} component={TeamPortal} />
       <Route path={"/sticker-designer"} component={StickerGenerator} />
       <Route path={"/wrap-designer"} component={WrapDesigner} />
+      <Route path={"/design-templates"} component={DesignTemplates} />
 
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
