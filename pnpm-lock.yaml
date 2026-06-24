@@ -193,6 +193,9 @@ importers:
       streamdown:
         specifier: ^1.4.0
         version: 1.4.0(@types/react@19.2.1)(react@19.2.1)
+      stripe:
+        specifier: ^22.2.3
+        version: 22.2.3(@types/node@24.7.0)
       superjson:
         specifier: ^1.13.3
         version: 1.13.3
