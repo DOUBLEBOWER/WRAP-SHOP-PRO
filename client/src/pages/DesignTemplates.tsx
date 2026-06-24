@@ -14,7 +14,9 @@ import {
   Plus,
   Loader2,
   RefreshCw,
-  Heart
+  Heart,
+  Settings,
+  Grid3x3
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
@@ -23,8 +25,10 @@ interface Template {
   id: string;
   name: string;
   category: string;
+  style: string;
   description: string;
-  imageUrl: string;
+  mainDesign: string;
+  variations: string[];
   createdAt: Date;
   likes: number;
   isLiked: boolean;
@@ -32,7 +36,18 @@ interface Template {
   sharedWith: string[];
 }
 
-const TEMPLATE_CATEGORIES = [
+const DESIGN_STYLES = {
+  'Modern Minimalist': 'Clean, modern design with minimal text, bold geometric shapes',
+  'Neon Cyber': 'Vibrant neon colors, glowing effects, futuristic aesthetic',
+  'Graffiti Street': 'Bold graffiti-style lettering, street art, urban vibe',
+  'Corporate Professional': 'Clean corporate design, professional colors, elegant',
+  'Retro Route 66': 'Vintage 1950s-60s aesthetic, warm colors, nostalgic',
+  'Holographic': 'Iridescent colors, holographic effects, futuristic shimmer',
+  'Metallic Chrome': 'Chrome and metallic effects, reflective surfaces, premium',
+  'Watercolor Art': 'Soft watercolor blending, artistic brush strokes, organic'
+};
+
+const DESIGN_CATEGORIES = [
   'Vehicle Wrap',
   'Storefront',
   'Custom Apparel',
@@ -45,16 +60,24 @@ const TEMPLATE_CATEGORIES = [
 export default function DesignTemplates() {
   const [activeTab, setActiveTab] = useState<'create' | 'gallery'>('create');
   const [selectedCategory, setSelectedCategory] = useState('Vehicle Wrap');
+  const [selectedStyle, setSelectedStyle] = useState('Modern Minimalist');
   const [designPrompt, setDesignPrompt] = useState('');
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [templateName, setTemplateName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [website, setWebsite] = useState('');
+  const [variations, setVariations] = useState(1);
+  const [resolution, setResolution] = useState<'standard' | 'high' | 'ultra'>('high');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [generatedDesigns, setGeneratedDesigns] = useState<{ main: string; variations: string[] } | null>(null);
+  const [templateName, setTemplateName] = useState('');
   const [savedTemplates, setSavedTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [shareEmail, setShareEmail] = useState('');
+  const [selectedVariation, setSelectedVariation] = useState(0);
 
-  // Mock AI generation (in production, this would call the tRPC mutation)
+  const designMutation = trpc.design.generateDesign.useMutation();
+  const stylesList = Object.keys(DESIGN_STYLES);
+
   const handleGenerateDesign = async () => {
     if (!designPrompt.trim()) {
       toast.error('Please describe your design concept');
@@ -63,22 +86,33 @@ export default function DesignTemplates() {
 
     setIsGenerating(true);
     try {
-      // Simulate AI generation delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In production, call: const { imageUrl } = await trpc.design.generateTemplate.useMutation()
-      // For now, use a placeholder
-      setGeneratedImage(`https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1200&q=80&t=${Date.now()}`);
-      toast.success('Design generated! Review and save to your templates.');
+      const result = await designMutation.mutateAsync({
+        category: selectedCategory,
+        style: selectedStyle,
+        prompt: designPrompt,
+        companyName: companyName || undefined,
+        phoneNumber: phoneNumber || undefined,
+        website: website || undefined,
+        variations,
+        resolution
+      });
+
+      setGeneratedDesigns({
+        main: result.mainDesign,
+        variations: result.variations ? result.variations.filter(Boolean) : []
+      });
+      setSelectedVariation(0);
+      toast.success('Design generated! 🎨');
     } catch (error) {
       toast.error('Failed to generate design. Try again.');
+      console.error(error);
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleSaveTemplate = () => {
-    if (!templateName.trim() || !generatedImage) {
+    if (!templateName.trim() || !generatedDesigns) {
       toast.error('Please name your template and generate a design');
       return;
     }
@@ -87,8 +121,10 @@ export default function DesignTemplates() {
       id: `template-${Date.now()}`,
       name: templateName,
       category: selectedCategory,
+      style: selectedStyle,
       description: designPrompt,
-      imageUrl: generatedImage,
+      mainDesign: generatedDesigns.main,
+      variations: generatedDesigns.variations,
       createdAt: new Date(),
       likes: 0,
       isLiked: false,
@@ -102,8 +138,10 @@ export default function DesignTemplates() {
     // Reset form
     setTemplateName('');
     setDesignPrompt('');
-    setGeneratedImage(null);
-    setUploadedImage(null);
+    setGeneratedDesigns(null);
+    setCompanyName('');
+    setPhoneNumber('');
+    setWebsite('');
   };
 
   const handleDeleteTemplate = (id: string) => {
@@ -131,13 +169,15 @@ export default function DesignTemplates() {
     setShareEmail('');
   };
 
-  const handleDownloadTemplate = (imageUrl: string, name: string) => {
+  const handleDownloadTemplate = (imageUrl: string, name: string, format: 'png' | 'jpg' = 'png') => {
     const link = document.createElement('a');
     link.href = imageUrl;
-    link.download = `${name}-template.png`;
+    link.download = `${name}-${resolution}.${format}`;
     link.click();
-    toast.success('Template downloaded!');
+    toast.success('Design downloaded!');
   };
+
+  const currentDesignImage = selectedVariation >= 0 && generatedDesigns?.variations[selectedVariation] ? generatedDesigns.variations[selectedVariation] : generatedDesigns?.main;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/20 to-black text-foreground">
@@ -150,9 +190,9 @@ export default function DesignTemplates() {
             </div>
             <div>
               <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent">
-                Design Templates
+                AI Design Studio
               </h1>
-              <p className="text-sm text-muted-foreground">Create, save, and share wrap designs with AI</p>
+              <p className="text-sm text-muted-foreground">Professional wrap & apparel designs powered by AI</p>
             </div>
           </div>
 
@@ -195,14 +235,28 @@ export default function DesignTemplates() {
                 <CardContent className="p-6 space-y-6">
                   {/* Category Select */}
                   <div>
-                    <label className="block text-sm font-semibold mb-3">Template Category</label>
+                    <label className="block text-sm font-semibold mb-3">Design Category</label>
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-foreground focus:outline-none focus:border-cyan-500/50"
                     >
-                      {TEMPLATE_CATEGORIES.map(cat => (
+                      {DESIGN_CATEGORIES.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Style Select */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-3">Design Style</label>
+                    <select
+                      value={selectedStyle}
+                      onChange={(e) => setSelectedStyle(e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-foreground focus:outline-none focus:border-cyan-500/50"
+                    >
+                      {stylesList.map(style => (
+                        <option key={style} value={style}>{style}</option>
                       ))}
                     </select>
                   </div>
@@ -213,52 +267,75 @@ export default function DesignTemplates() {
                     <textarea
                       value={designPrompt}
                       onChange={(e) => setDesignPrompt(e.target.value)}
-                      placeholder="Describe your design idea... e.g., 'Bold neon blue and pink geometric patterns with our company logo and phone number'"
-                      className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-foreground placeholder-muted-foreground focus:outline-none focus:border-cyan-500/50 resize-none h-32"
+                      placeholder="Describe your design idea in detail... Include colors, elements, mood, and any specific requirements."
+                      className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-foreground placeholder-muted-foreground focus:outline-none focus:border-cyan-500/50 resize-none h-24"
                     />
                   </div>
 
-                  {/* Image Upload */}
-                  <div>
-                    <label className="block text-sm font-semibold mb-3">Reference Image (Optional)</label>
-                    <div className="relative border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-cyan-500/50 transition-all cursor-pointer">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              setUploadedImage(event.target?.result as string);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      {uploadedImage ? (
-                        <div className="space-y-2">
-                          <img src={uploadedImage} alt="Uploaded" className="h-20 w-20 mx-auto rounded-lg object-cover" />
-                          <p className="text-xs text-cyan-400">Image uploaded ✓</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                          <p className="text-sm font-semibold">Click to upload reference image</p>
-                          <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
-                        </div>
-                      )}
+                  {/* Business Info */}
+                  <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                    <label className="block text-xs font-semibold text-muted-foreground">Business Information (Optional)</label>
+                    <Input
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Company Name"
+                      className="bg-white/10 border-white/20 text-xs"
+                    />
+                    <Input
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="Phone Number"
+                      className="bg-white/10 border-white/20 text-xs"
+                    />
+                    <Input
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      placeholder="Website"
+                      className="bg-white/10 border-white/20 text-xs"
+                    />
+                  </div>
+
+                  {/* Advanced Options */}
+                  <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                    <label className="block text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                      <Settings className="h-3 w-3" />
+                      Advanced Options
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-semibold block mb-1">Variations</label>
+                        <select
+                          value={variations}
+                          onChange={(e) => setVariations(Number(e.target.value))}
+                          className="w-full px-2 py-1 rounded text-xs bg-white/10 border border-white/20"
+                        >
+                          {[1, 2, 3, 4].map(n => (
+                            <option key={n} value={n}>{n} Design{n > 1 ? 's' : ''}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold block mb-1">Resolution</label>
+                        <select
+                          value={resolution}
+                          onChange={(e) => setResolution(e.target.value as any)}
+                          className="w-full px-2 py-1 rounded text-xs bg-white/10 border border-white/20"
+                        >
+                          <option value="standard">Standard</option>
+                          <option value="high">High</option>
+                          <option value="ultra">Ultra 4K</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
                   {/* Generate Button */}
                   <Button
                     onClick={handleGenerateDesign}
-                    disabled={isGenerating}
+                    disabled={isGenerating || designMutation.isPending}
                     className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold py-3 rounded-lg gap-2"
                   >
-                    {isGenerating ? (
+                    {isGenerating || designMutation.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Generating...
@@ -266,7 +343,7 @@ export default function DesignTemplates() {
                     ) : (
                       <>
                         <Zap className="h-4 w-4" />
-                        Generate Design with AI
+                        Generate with AI
                       </>
                     )}
                   </Button>
@@ -276,11 +353,46 @@ export default function DesignTemplates() {
 
             {/* Right: Preview */}
             <div className="space-y-6">
-              {generatedImage ? (
+              {generatedDesigns ? (
                 <Card className="bg-white/5 border-white/10 overflow-hidden">
                   <CardContent className="p-0">
-                    <img src={generatedImage} alt="Generated Design" className="w-full h-96 object-cover" />
-                    <div className="p-6 space-y-4">
+                    <div className="relative overflow-hidden h-96 bg-black">
+                      <img src={currentDesignImage} alt="Generated Design" className="w-full h-full object-cover" />
+                      <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-semibold text-cyan-400">
+                        {selectedStyle}
+                      </div>
+                    </div>
+
+                    {/* Variation Selector */}
+                    {generatedDesigns.variations.length > 0 && (
+                      <div className="p-4 border-t border-white/10 space-y-3">
+                        <p className="text-xs font-semibold text-muted-foreground">Variations ({generatedDesigns.variations.length + 1})</p>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          <button
+                            onClick={() => setSelectedVariation(-1)}
+                            className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
+                              selectedVariation === -1 ? 'border-cyan-500' : 'border-white/20'
+                            }`}
+                          >
+                            <img src={generatedDesigns.main} alt="Main" className="w-full h-full object-cover" />
+                          </button>
+                          {generatedDesigns.variations.map((img, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setSelectedVariation(i)}
+                              className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
+                                selectedVariation === i ? 'border-cyan-500' : 'border-white/20'
+                              }`}
+                            >
+                              <img src={img} alt={`Variation ${i + 1}`} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="p-4 space-y-3 border-t border-white/10">
                       <div>
                         <label className="block text-sm font-semibold mb-2">Template Name</label>
                         <Input
@@ -299,7 +411,7 @@ export default function DesignTemplates() {
                           Save Template
                         </Button>
                         <Button
-                          onClick={() => handleDownloadTemplate(generatedImage, templateName || 'design')}
+                          onClick={() => handleDownloadTemplate(currentDesignImage || '', templateName || 'design', 'png')}
                           variant="outline"
                           className="flex-1 gap-2"
                         >
@@ -308,7 +420,7 @@ export default function DesignTemplates() {
                         </Button>
                         <Button
                           onClick={() => {
-                            setGeneratedImage(null);
+                            setGeneratedDesigns(null);
                             setDesignPrompt('');
                           }}
                           variant="outline"
@@ -323,9 +435,9 @@ export default function DesignTemplates() {
               ) : (
                 <Card className="bg-white/5 border-white/10 border-2 border-dashed h-96 flex items-center justify-center">
                   <div className="text-center space-y-3">
-                    <Zap className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <Grid3x3 className="h-12 w-12 mx-auto text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      Describe your design and click "Generate" to see a preview
+                      Describe your design and click "Generate with AI" to create professional mockups
                     </p>
                   </div>
                 </Card>
@@ -344,15 +456,15 @@ export default function DesignTemplates() {
                 {savedTemplates.map(template => (
                   <Card key={template.id} className="bg-white/5 border-white/10 overflow-hidden hover:border-cyan-500/30 transition-all group">
                     <div className="relative overflow-hidden h-48">
-                      <img src={template.imageUrl} alt={template.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <img src={template.mainDesign} alt={template.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-semibold text-cyan-400">
-                        {template.category}
+                        {template.style}
                       </div>
                     </div>
                     <CardContent className="p-4 space-y-3">
                       <div>
                         <h3 className="font-bold text-sm">{template.name}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
+                        <p className="text-xs text-muted-foreground">{template.category}</p>
                       </div>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>By {template.createdBy}</span>
@@ -366,7 +478,7 @@ export default function DesignTemplates() {
                       </div>
                       <div className="flex gap-2">
                         <Button
-                          onClick={() => handleDownloadTemplate(template.imageUrl, template.name)}
+                          onClick={() => handleDownloadTemplate(template.mainDesign, template.name)}
                           variant="outline"
                           size="sm"
                           className="flex-1 gap-1 text-xs"
