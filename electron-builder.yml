@@ -1,0 +1,44 @@
+appId: com.allprocoast2coast.crm
+productName: All-Pro Coast 2 Coast CRM
+directories:
+  buildResources: client/public
+  output: dist-electron
+
+files:
+  - dist/**/*
+  - node_modules/**/*
+  - electron-main.js
+  - electron-preload.js
+  - package.json
+
+win:
+  target:
+    - nsis
+    - portable
+  certificateFile: null
+  certificatePassword: null
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: All-Pro CRM
+
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.business
+  sign: false
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Office
+
+publish:
+  provider: github
+  owner: allprocoast2coast
+  repo: crm-releases
