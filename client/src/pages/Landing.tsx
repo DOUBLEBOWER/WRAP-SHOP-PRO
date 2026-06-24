@@ -19,7 +19,8 @@ import {
   CheckCircle,
   ArrowRight,
   Instagram,
-  Facebook
+  Facebook,
+  Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -190,6 +191,12 @@ export default function Landing() {
                 <Button className="bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:via-purple-700 hover:to-cyan-600 text-white rounded-xl font-bold px-6 py-5 text-sm gap-2 shadow-xl shadow-pink-500/20">
                   <Calendar className="h-4 w-4" />
                   Book a Free Consultation
+                </Button>
+              </a>
+              <a href="https://github.com/allprocoast2coast/allprocoast2coast-crm/releases" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="border-green-500/30 text-green-400 hover:bg-green-500/10 rounded-xl font-bold px-6 py-5 text-sm gap-2">
+                  <span className="text-base">📥</span>
+                  Download Desktop App
                 </Button>
               </a>
               <a href="#portfolio">
