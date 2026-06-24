@@ -5,11 +5,33 @@ const { autoUpdater } = require('electron-updater');
 const fs = require('fs');
 
 let mainWindow;
+let splashWindow;
 const userDataPath = app.getPath('userData');
 const dbPath = path.join(userDataPath, 'crm-database.db');
 
-// Initialize auto-updater
+// Configure auto-updater for GitHub releases
 autoUpdater.checkForUpdatesAndNotify();
+
+function createSplashWindow() {
+  splashWindow = new BrowserWindow({
+    width: 500,
+    height: 600,
+    frame: false,
+    alwaysOnTop: true,
+    transparent: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  });
+
+  const splashPath = isDev
+    ? path.join(__dirname, 'electron-splash.html')
+    : path.join(__dirname, 'dist/electron-splash.html');
+
+  splashWindow.loadFile(splashPath);
+  splashWindow.webContents.openDevTools = () => {}; // Disable dev tools on splash
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -17,6 +39,7 @@ function createWindow() {
     height: 900,
     minWidth: 1000,
     minHeight: 700,
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -32,9 +55,17 @@ function createWindow() {
 
   mainWindow.loadURL(startUrl);
 
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
+  // Show main window when ready
+  mainWindow.once('ready-to-show', () => {
+    if (splashWindow) {
+      splashWindow.destroy();
+      splashWindow = null;
+    }
+    mainWindow.show();
+    if (isDev) {
+      mainWindow.webContents.openDevTools();
+    }
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -50,7 +81,10 @@ function createWindow() {
   });
 }
 
-app.on('ready', createWindow);
+app.on('ready', () => {
+  createSplashWindow();
+  setTimeout(createWindow, 500);
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
