@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +16,9 @@ import {
   RefreshCw,
   Heart,
   Settings,
-  Grid3x3
+  Grid3x3,
+  X,
+  Image as ImageIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
@@ -74,9 +76,48 @@ export default function DesignTemplates() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [shareEmail, setShareEmail] = useState('');
   const [selectedVariation, setSelectedVariation] = useState(0);
+  const [referenceImages, setReferenceImages] = useState<{ url: string; mimeType: string }[]>([]);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const designMutation = trpc.design.generateDesign.useMutation();
   const stylesList = Object.keys(DESIGN_STYLES);
+
+  const handleAddReferenceImages = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setIsUploadingImages(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) {
+          toast.error(`${file.name} is not an image file`);
+          continue;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setReferenceImages(prev => [...prev, {
+            url: result,
+            mimeType: file.type
+          }]);
+        };
+        reader.readAsDataURL(file);
+      }
+      toast.success(`Added ${files.length} reference image(s)`);
+    } catch (error) {
+      toast.error('Failed to add reference images');
+      console.error(error);
+    } finally {
+      setIsUploadingImages(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveReferenceImage = (index: number) => {
+    setReferenceImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleGenerateDesign = async () => {
     if (!designPrompt.trim()) {
@@ -93,6 +134,7 @@ export default function DesignTemplates() {
         companyName: companyName || undefined,
         phoneNumber: phoneNumber || undefined,
         website: website || undefined,
+        referenceImages: referenceImages.length > 0 ? referenceImages : undefined,
         variations,
         resolution
       });
@@ -142,6 +184,7 @@ export default function DesignTemplates() {
     setCompanyName('');
     setPhoneNumber('');
     setWebsite('');
+    setReferenceImages([]);
   };
 
   const handleDeleteTemplate = (id: string) => {
@@ -272,6 +315,72 @@ export default function DesignTemplates() {
                     />
                   </div>
 
+                  {/* Reference Images Section */}
+                  <div className="space-y-3 p-3 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-lg border border-cyan-500/20">
+                    <label className="block text-sm font-semibold text-cyan-300 flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4" />
+                      Reference Images (Optional)
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Add photos of vehicles, storefronts, logos, or any reference images to help AI generate better designs
+                    </p>
+                    
+                    {/* Reference Images Preview */}
+                    {referenceImages.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {referenceImages.map((img, idx) => (
+                          <div key={idx} className="relative group">
+                            <img
+                              src={img.url}
+                              alt={`reference-${idx}`}
+                              className="w-full h-20 object-cover rounded-lg"
+                            />
+                            <button
+                              onClick={() => handleRemoveReferenceImage(idx)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Upload Button */}
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingImages}
+                      variant="outline"
+                      className="w-full border-cyan-500/30 hover:bg-cyan-500/10 text-cyan-300 gap-2"
+                    >
+                      {isUploadingImages ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Adding Images...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4" />
+                          Add Reference Images
+                        </>
+                      )}
+                    </Button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => handleAddReferenceImages(e.target.files)}
+                      className="hidden"
+                    />
+                    
+                    {referenceImages.length > 0 && (
+                      <p className="text-xs text-cyan-300 font-semibold">
+                        {referenceImages.length} image{referenceImages.length > 1 ? 's' : ''} added
+                      </p>
+                    )}
+                  </div>
+
                   {/* Business Info */}
                   <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
                     <label className="block text-xs font-semibold text-muted-foreground">Business Information (Optional)</label>
@@ -351,100 +460,113 @@ export default function DesignTemplates() {
               </Card>
             </div>
 
-            {/* Right: Preview */}
+            {/* Right: Preview & Actions */}
             <div className="space-y-6">
               {generatedDesigns ? (
-                <Card className="bg-white/5 border-white/10 overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className="relative overflow-hidden h-96 bg-black">
-                      <img src={currentDesignImage} alt="Generated Design" className="w-full h-full object-cover" />
-                      <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-semibold text-cyan-400">
-                        {selectedStyle}
-                      </div>
+                <>
+                  {/* Design Preview */}
+                  <Card className="bg-white/5 border-white/10 overflow-hidden">
+                    <div className="aspect-square bg-black/50 flex items-center justify-center">
+                      {currentDesignImage ? (
+                        <img
+                          src={currentDesignImage}
+                          alt="Generated Design"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center text-muted-foreground">
+                          <Zap className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                          <p>No design generated</p>
+                        </div>
+                      )}
                     </div>
+                  </Card>
 
-                    {/* Variation Selector */}
-                    {generatedDesigns.variations.length > 0 && (
-                      <div className="p-4 border-t border-white/10 space-y-3">
-                        <p className="text-xs font-semibold text-muted-foreground">Variations ({generatedDesigns.variations.length + 1})</p>
-                        <div className="flex gap-2 overflow-x-auto pb-2">
+                  {/* Variation Selector */}
+                  {generatedDesigns.variations.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold">Variations</p>
+                      <div className="grid grid-cols-4 gap-2">
+                        <button
+                          onClick={() => setSelectedVariation(-1)}
+                          className={`aspect-square rounded-lg border-2 overflow-hidden transition-all ${
+                            selectedVariation === -1
+                              ? 'border-cyan-500 ring-2 ring-cyan-500/50'
+                              : 'border-white/10 hover:border-white/20'
+                          }`}
+                        >
+                          <img
+                            src={generatedDesigns.main}
+                            alt="Main"
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                        {generatedDesigns.variations.map((variation, idx) => (
                           <button
-                            onClick={() => setSelectedVariation(-1)}
-                            className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
-                              selectedVariation === -1 ? 'border-cyan-500' : 'border-white/20'
+                            key={idx}
+                            onClick={() => setSelectedVariation(idx)}
+                            className={`aspect-square rounded-lg border-2 overflow-hidden transition-all ${
+                              selectedVariation === idx
+                                ? 'border-cyan-500 ring-2 ring-cyan-500/50'
+                                : 'border-white/10 hover:border-white/20'
                             }`}
                           >
-                            <img src={generatedDesigns.main} alt="Main" className="w-full h-full object-cover" />
+                            <img
+                              src={variation}
+                              alt={`Variation ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
                           </button>
-                          {generatedDesigns.variations.map((img, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setSelectedVariation(i)}
-                              className={`flex-shrink-0 w-16 h-16 rounded-lg border-2 overflow-hidden ${
-                                selectedVariation === i ? 'border-cyan-500' : 'border-white/20'
-                              }`}
-                            >
-                              <img src={img} alt={`Variation ${i + 1}`} className="w-full h-full object-cover" />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="p-4 space-y-3 border-t border-white/10">
-                      <div>
-                        <label className="block text-sm font-semibold mb-2">Template Name</label>
-                        <Input
-                          value={templateName}
-                          onChange={(e) => setTemplateName(e.target.value)}
-                          placeholder="e.g., Neon Blue Fleet Wrap"
-                          className="bg-white/10 border-white/20"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => {
-                            // Store design in sessionStorage and redirect to booking
-                            sessionStorage.setItem('designTemplate', JSON.stringify({
-                              image: currentDesignImage,
-                              category: selectedCategory,
-                              style: selectedStyle,
-                              description: designPrompt
-                            }));
-                            window.location.href = '/book';
-                          }}
-                          className="flex-1 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 gap-2"
-                        >
-                          <Copy className="h-4 w-4" />
-                          Use This Design
-                        </Button>
-                        <Button
-                          onClick={handleSaveTemplate}
-                          className="flex-1 bg-green-600 hover:bg-green-700 gap-2"
-                        >
-                          <Save className="h-4 w-4" />
-                          Save Template
-                        </Button>
-                        <Button
-                          onClick={() => handleDownloadTemplate(currentDesignImage || '', templateName || 'design', 'png')}
-                          variant="outline"
-                          className="gap-2"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
+                        ))}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="bg-white/5 border-white/10 border-2 border-dashed h-96 flex items-center justify-center">
-                  <div className="text-center space-y-3">
-                    <Grid3x3 className="h-12 w-12 mx-auto text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Describe your design and click "Generate with AI" to create professional mockups
-                    </p>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => handleDownloadTemplate(currentDesignImage || '', templateName || 'design', 'png')}
+                        className="bg-green-600 hover:bg-green-700 gap-2"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </Button>
+                      <Button
+                        onClick={handleGenerateDesign}
+                        disabled={isGenerating}
+                        variant="outline"
+                        className="gap-2"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        Regenerate
+                      </Button>
+                    </div>
+
+                    {/* Save Template */}
+                    <div className="space-y-2">
+                      <Input
+                        value={templateName}
+                        onChange={(e) => setTemplateName(e.target.value)}
+                        placeholder="Template name..."
+                        className="bg-white/10 border-white/20"
+                      />
+                      <Button
+                        onClick={handleSaveTemplate}
+                        className="w-full bg-pink-600 hover:bg-pink-700 gap-2"
+                      >
+                        <Save className="h-4 w-4" />
+                        Save as Template
+                      </Button>
+                    </div>
                   </div>
+                </>
+              ) : (
+                <Card className="bg-white/5 border-white/10 p-8 text-center">
+                  <Zap className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p className="text-muted-foreground">
+                    Fill in the form and click "Generate with AI" to create your design
+                  </p>
                 </Card>
               )}
             </div>
@@ -452,74 +574,56 @@ export default function DesignTemplates() {
         ) : (
           // Gallery Tab
           <div className="space-y-6">
+            <h2 className="text-2xl font-bold">My Templates</h2>
             {savedTemplates.length === 0 ? (
-              <Card className="bg-white/5 border-white/10 py-12 text-center">
-                <p className="text-muted-foreground">No templates yet. Create your first design! 🎨</p>
+              <Card className="bg-white/5 border-white/10 p-12 text-center">
+                <Grid3x3 className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p className="text-muted-foreground">No templates saved yet. Create one to get started!</p>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {savedTemplates.map(template => (
-                  <Card key={template.id} className="bg-white/5 border-white/10 overflow-hidden hover:border-cyan-500/30 transition-all group">
-                    <div className="relative overflow-hidden h-48">
-                      <img src={template.mainDesign} alt={template.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      <div className="absolute top-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-semibold text-cyan-400">
-                        {template.style}
-                      </div>
+                  <Card key={template.id} className="bg-white/5 border-white/10 overflow-hidden hover:border-white/20 transition-all">
+                    <div className="aspect-square bg-black/50 overflow-hidden">
+                      <img
+                        src={template.mainDesign}
+                        alt={template.name}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform"
+                      />
                     </div>
                     <CardContent className="p-4 space-y-3">
                       <div>
                         <h3 className="font-bold text-sm">{template.name}</h3>
-                        <p className="text-xs text-muted-foreground">{template.category}</p>
+                        <p className="text-xs text-muted-foreground">{template.category} • {template.style}</p>
                       </div>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>By {template.createdBy}</span>
-                        <button
-                          onClick={() => handleLikeTemplate(template.id)}
-                          className={`flex items-center gap-1 transition-colors ${template.isLiked ? 'text-pink-400' : 'hover:text-pink-400'}`}
-                        >
-                          <Heart className={`h-3.5 w-3.5 ${template.isLiked ? 'fill-current' : ''}`} />
-                          {template.likes}
-                        </button>
-                      </div>
+
                       <div className="flex gap-2">
                         <Button
-                          onClick={() => {
-                            sessionStorage.setItem('designTemplate', JSON.stringify({
-                              image: template.mainDesign,
-                              category: template.category,
-                              style: template.style,
-                              description: template.description
-                            }));
-                            window.location.href = '/book';
-                          }}
-                          className="flex-1 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 gap-1 text-xs"
+                          onClick={() => handleLikeTemplate(template.id)}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 gap-1"
                         >
-                          <Copy className="h-3 w-3" />
-                          Use Design
+                          <Heart className={`h-3 w-3 ${template.isLiked ? 'fill-current text-red-500' : ''}`} />
+                          {template.likes}
                         </Button>
                         <Button
                           onClick={() => handleDownloadTemplate(template.mainDesign, template.name)}
                           variant="outline"
                           size="sm"
-                          className="gap-1 text-xs"
+                          className="flex-1 gap-1"
                         >
                           <Download className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          onClick={() => setSelectedTemplate(template)}
-                          variant="outline"
-                          size="sm"
-                          className="gap-1 text-xs"
-                        >
-                          <Share2 className="h-3 w-3" />
+                          Download
                         </Button>
                         <Button
                           onClick={() => handleDeleteTemplate(template.id)}
                           variant="outline"
                           size="sm"
-                          className="gap-1 text-xs text-red-400 hover:bg-red-500/10"
+                          className="flex-1 gap-1 text-red-400 hover:text-red-500"
                         >
                           <Trash2 className="h-3 w-3" />
+                          Delete
                         </Button>
                       </div>
                     </CardContent>
@@ -530,51 +634,6 @@ export default function DesignTemplates() {
           </div>
         )}
       </div>
-
-      {/* Share Modal */}
-      {selectedTemplate && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <Card className="bg-black border-white/10 max-w-md w-full">
-            <CardContent className="p-6 space-y-4">
-              <h2 className="text-lg font-bold">Share Template</h2>
-              <p className="text-sm text-muted-foreground">Share "{selectedTemplate.name}" with your team</p>
-              <div className="flex gap-2">
-                <Input
-                  value={shareEmail}
-                  onChange={(e) => setShareEmail(e.target.value)}
-                  placeholder="team@example.com"
-                  className="bg-white/10 border-white/20"
-                />
-                <Button
-                  onClick={() => handleShareTemplate(selectedTemplate)}
-                  className="bg-cyan-600 hover:bg-cyan-700"
-                >
-                  Share
-                </Button>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground">Shared with:</p>
-                {selectedTemplate.sharedWith.length > 0 ? (
-                  selectedTemplate.sharedWith.map(email => (
-                    <div key={email} className="text-xs bg-white/5 px-2 py-1 rounded">
-                      {email}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-muted-foreground">Not shared yet</p>
-                )}
-              </div>
-              <Button
-                onClick={() => setSelectedTemplate(null)}
-                variant="outline"
-                className="w-full"
-              >
-                Close
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

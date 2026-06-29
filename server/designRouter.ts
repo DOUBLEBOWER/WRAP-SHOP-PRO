@@ -34,6 +34,10 @@ export const designRouter = router({
         phoneNumber: z.string().optional(),
         website: z.string().optional(),
         logoUrl: z.string().optional(),
+        referenceImages: z.array(z.object({
+          url: z.string(),
+          mimeType: z.string().optional()
+        })).optional(),
         variations: z.coerce.number().min(1).max(4).default(1),
         resolution: z.enum(['standard', 'high', 'ultra']).default('high')
       })
@@ -70,9 +74,15 @@ IMPORTANT: Generate a single, cohesive, professional design that meets all requi
       `.trim();
 
       try {
-        // Generate the main design
+        // Generate the main design with reference images if provided
         const mainDesign = await generateImage({
-          prompt: enhancedPrompt
+          prompt: enhancedPrompt,
+          originalImages: input.referenceImages && input.referenceImages.length > 0 
+            ? input.referenceImages.map(img => ({
+                url: img.url,
+                mimeType: img.mimeType || 'image/jpeg'
+              }))
+            : undefined
         });
 
         // Generate variations if requested
@@ -81,7 +91,13 @@ IMPORTANT: Generate a single, cohesive, professional design that meets all requi
           for (let i = 1; i < input.variations; i++) {
             const variationPrompt = `${enhancedPrompt}\n\nCreate a DIFFERENT variation with an alternative layout, color scheme, or composition while keeping the same style and information.`;
             const variation = await generateImage({
-              prompt: variationPrompt
+              prompt: variationPrompt,
+              originalImages: input.referenceImages && input.referenceImages.length > 0 
+                ? input.referenceImages.map(img => ({
+                    url: img.url,
+                    mimeType: img.mimeType || 'image/jpeg'
+                  }))
+                : undefined
             });
             if (variation.url) variations.push(variation.url);
           }
