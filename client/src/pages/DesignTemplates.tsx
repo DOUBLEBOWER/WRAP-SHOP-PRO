@@ -404,6 +404,22 @@ export default function DesignTemplates() {
                       </div>
                       <div className="flex gap-2">
                         <Button
+                          onClick={() => {
+                            // Store design in sessionStorage and redirect to booking
+                            sessionStorage.setItem('designTemplate', JSON.stringify({
+                              image: currentDesignImage,
+                              category: selectedCategory,
+                              style: selectedStyle,
+                              description: designPrompt
+                            }));
+                            window.location.href = '/book';
+                          }}
+                          className="flex-1 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 gap-2"
+                        >
+                          <Copy className="h-4 w-4" />
+                          Use This Design
+                        </Button>
+                        <Button
                           onClick={handleSaveTemplate}
                           className="flex-1 bg-green-600 hover:bg-green-700 gap-2"
                         >
@@ -413,20 +429,9 @@ export default function DesignTemplates() {
                         <Button
                           onClick={() => handleDownloadTemplate(currentDesignImage || '', templateName || 'design', 'png')}
                           variant="outline"
-                          className="flex-1 gap-2"
-                        >
-                          <Download className="h-4 w-4" />
-                          Download
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setGeneratedDesigns(null);
-                            setDesignPrompt('');
-                          }}
-                          variant="outline"
                           className="gap-2"
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          <Download className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -478,22 +483,35 @@ export default function DesignTemplates() {
                       </div>
                       <div className="flex gap-2">
                         <Button
+                          onClick={() => {
+                            sessionStorage.setItem('designTemplate', JSON.stringify({
+                              image: template.mainDesign,
+                              category: template.category,
+                              style: template.style,
+                              description: template.description
+                            }));
+                            window.location.href = '/book';
+                          }}
+                          className="flex-1 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 gap-1 text-xs"
+                        >
+                          <Copy className="h-3 w-3" />
+                          Use Design
+                        </Button>
+                        <Button
                           onClick={() => handleDownloadTemplate(template.mainDesign, template.name)}
                           variant="outline"
                           size="sm"
-                          className="flex-1 gap-1 text-xs"
+                          className="gap-1 text-xs"
                         >
                           <Download className="h-3 w-3" />
-                          Download
                         </Button>
                         <Button
                           onClick={() => setSelectedTemplate(template)}
                           variant="outline"
                           size="sm"
-                          className="flex-1 gap-1 text-xs"
+                          className="gap-1 text-xs"
                         >
                           <Share2 className="h-3 w-3" />
-                          Share
                         </Button>
                         <Button
                           onClick={() => handleDeleteTemplate(template.id)}

@@ -390,7 +390,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredPortfolio.map((item: PortfolioItem) => (
               <div key={item.id} className="group relative aspect-square rounded-2xl overflow-hidden border border-white/5 cursor-pointer">
-                <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                   <Badge className="bg-pink-600 text-white border-0 text-[10px] font-bold self-start mb-1">{item.category}</Badge>
                   <h4 className="font-bold text-sm text-white">{item.title}</h4>

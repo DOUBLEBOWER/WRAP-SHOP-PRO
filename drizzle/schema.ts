@@ -112,3 +112,18 @@ export const calendarEvents = mysqlTable("calendar_events", {
 
 export type CalendarEvent = typeof calendarEvents.$inferSelect;
 export type InsertCalendarEvent = typeof calendarEvents.$inferInsert;
+
+// ─── Portfolio: Gallery Items ──────────────────────────────────────────────
+export const portfolioItems = mysqlTable("portfolio_items", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  category: varchar("category", { length: 64 }).notNull(),
+  imageUrl: text("imageUrl").notNull(), // S3 URL or remote URL
+  imageKey: varchar("imageKey", { length: 255 }), // S3 storage key for deletion
+  featured: boolean("featured").notNull().default(false),
+  uploadedAt: timestamp("uploadedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PortfolioItem = typeof portfolioItems.$inferSelect;
+export type InsertPortfolioItem = typeof portfolioItems.$inferInsert;

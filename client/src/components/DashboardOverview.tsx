@@ -11,7 +11,8 @@ import {
   Activity, 
   Clock, 
   AlertCircle,
-  FileCheck
+  FileCheck,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -276,6 +277,17 @@ export default function DashboardOverview({
               >
                 Lookup Customer Profile
               </Button>
+              <a 
+                href="/wrap-designer"
+                className="w-full block"
+              >
+                <Button 
+                  className="w-full justify-start text-xs font-semibold py-5 bg-gradient-to-r from-pink-500/20 to-rose-500/20 hover:from-pink-500/30 hover:to-rose-500/30 text-pink-300 border border-pink-500/30 rounded-xl gap-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Generate Wrap Design
+                </Button>
+              </a>
             </div>
           </div>
 

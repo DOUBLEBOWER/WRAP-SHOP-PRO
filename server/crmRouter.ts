@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { publicProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
 import {
-  customers, deals, invoices, inventory, calendarEvents
+  customers, deals, invoices, inventory, calendarEvents, portfolioItems
 } from "../drizzle/schema";
 
 // ─── CUSTOMERS ────────────────────────────────────────────────────────────────
@@ -327,6 +327,62 @@ export const crmRouter = router({
         const db = await getDb();
         if (!db) throw new Error("Database unavailable");
         await db.delete(calendarEvents).where(eq(calendarEvents.id, input.id));
+        return { success: true };
+      })
+  }),
+
+  portfolio: router({
+    list: publicProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) return [];
+      const rows = await db.select().from(portfolioItems);
+      return rows;
+    }),
+
+    create: publicProcedure
+      .input(z.object({
+        id: z.string(),
+        title: z.string(),
+        category: z.string(),
+        imageUrl: z.string(),
+        imageKey: z.string().optional(),
+        featured: z.boolean().default(false)
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        await db.insert(portfolioItems).values({
+          id: input.id,
+          title: input.title,
+          category: input.category,
+          imageUrl: input.imageUrl,
+          imageKey: input.imageKey,
+          featured: input.featured
+        });
+        return { success: true };
+      }),
+
+    update: publicProcedure
+      .input(z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        category: z.string().optional(),
+        featured: z.boolean().optional()
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        const { id, ...updates } = input;
+        await db.update(portfolioItems).set(updates).where(eq(portfolioItems.id, id));
+        return { success: true };
+      }),
+
+    delete: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database unavailable");
+        await db.delete(portfolioItems).where(eq(portfolioItems.id, input.id));
         return { success: true };
       })
   })
