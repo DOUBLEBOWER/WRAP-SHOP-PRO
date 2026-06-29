@@ -21,7 +21,9 @@ import {
   Image as ImageIcon,
   Facebook,
   Instagram,
-  Twitter
+  Twitter,
+  Mail,
+  MessageSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
@@ -105,6 +107,13 @@ export default function DesignTemplates() {
   const [generatedSocialDesigns, setGeneratedSocialDesigns] = useState<{ main: string; variations: string[] } | null>(null);
   const [socialTemplateName, setSocialTemplateName] = useState('');
   const socialFileInputRef = useRef<HTMLInputElement>(null);
+  const [shareSMS, setShareSMS] = useState('');
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showSMSModal, setShowSMSModal] = useState(false);
+  const [currentShareImage, setCurrentShareImage] = useState<string | null>(null);
+  const [currentShareTemplateName, setCurrentShareTemplateName] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isSendingSMS, setIsSendingSMS] = useState(false);
 
   const designMutation = trpc.design.generateDesign.useMutation();
   const stylesList = Object.keys(DESIGN_STYLES);
@@ -237,6 +246,69 @@ export default function DesignTemplates() {
     setSocialPhoneNumber('');
     setSocialWebsite('');
     setSocialReferenceImages([]);
+  };
+
+  const handleShareViaEmail = async () => {
+    if (!shareEmail.trim()) {
+      toast.error('Please enter an email address');
+      return;
+    }
+    if (!currentShareImage) {
+      toast.error('No design to share');
+      return;
+    }
+
+    try {
+      setIsSendingEmail(true);
+      const subject = `Check out this wrap design: ${currentShareTemplateName}`;
+      const body = `I wanted to share this wrap design with you!\n\nDesign: ${currentShareTemplateName}\n\nView the design: ${currentShareImage}\n\nGenerated with All-Pro Coast 2 Coast CRM`;
+      const mailtoLink = `mailto:${shareEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailtoLink;
+      toast.success('Opening email client...');
+      setShowEmailModal(false);
+      setShareEmail('');
+    } catch (error) {
+      toast.error('Failed to share via email');
+      console.error(error);
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const handleShareViaSMS = async () => {
+    if (!shareSMS.trim()) {
+      toast.error('Please enter a phone number');
+      return;
+    }
+    if (!currentShareImage) {
+      toast.error('No design to share');
+      return;
+    }
+
+    try {
+      setIsSendingSMS(true);
+      const message = `Check out this wrap design: ${currentShareTemplateName}. ${currentShareImage}`;
+      const smsLink = `sms:${shareSMS}?body=${encodeURIComponent(message)}`;
+      window.location.href = smsLink;
+      toast.success('Opening SMS...');
+      setShowSMSModal(false);
+      setShareSMS('');
+    } catch (error) {
+      toast.error('Failed to share via SMS');
+      console.error(error);
+    } finally {
+      setIsSendingSMS(false);
+    }
+  };
+
+  const openShareModal = (imageUrl: string, templateName: string, type: 'email' | 'sms') => {
+    setCurrentShareImage(imageUrl);
+    setCurrentShareTemplateName(templateName);
+    if (type === 'email') {
+      setShowEmailModal(true);
+    } else {
+      setShowSMSModal(true);
+    }
   };
 
   const handleGenerateDesign = async () => {
@@ -989,6 +1061,114 @@ export default function DesignTemplates() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Email Share Modal */}
+        {showEmailModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <Card className="bg-black/90 border-white/20 w-full max-w-md mx-4">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-blue-400" />
+                    Share via Email
+                  </h3>
+                  <button
+                    onClick={() => setShowEmailModal(false)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <Input
+                  value={shareEmail}
+                  onChange={(e) => setShareEmail(e.target.value)}
+                  placeholder="recipient@example.com"
+                  className="bg-white/10 border-white/20"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleShareViaEmail}
+                    disabled={isSendingEmail}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isSendingEmail ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Send Email
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => setShowEmailModal(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* SMS Share Modal */}
+        {showSMSModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <Card className="bg-black/90 border-white/20 w-full max-w-md mx-4">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-purple-400" />
+                    Share via SMS
+                  </h3>
+                  <button
+                    onClick={() => setShowSMSModal(false)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <Input
+                  value={shareSMS}
+                  onChange={(e) => setShareSMS(e.target.value)}
+                  placeholder="+1 (555) 123-4567"
+                  className="bg-white/10 border-white/20"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleShareViaSMS}
+                    disabled={isSendingSMS}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  >
+                    {isSendingSMS ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Send SMS
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => setShowSMSModal(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>
