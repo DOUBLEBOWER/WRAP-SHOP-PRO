@@ -114,6 +114,13 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
             <Zap className="h-4 w-4" />
             Desktop Widget
           </button>
+          <button
+            onClick={() => window.open('/mobile', '_blank')}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-500/10 to-indigo-500/5 border border-blue-500/20 text-blue-400 hover:from-blue-500/20 hover:to-indigo-500/10 transition-all"
+          >
+            <Users className="h-4 w-4" />
+            Mobile Dashboard
+          </button>
         </div>
 
         {/* Sidebar Footer / Business Status */}

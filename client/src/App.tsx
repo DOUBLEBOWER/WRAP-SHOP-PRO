@@ -16,6 +16,7 @@ import WrapDesigner from "./pages/WrapDesigner";
 import DesignTemplates from "./pages/DesignTemplates";
 import { ApprovalPage } from "./pages/ApprovalPage";
 import { DesktopWidget } from "./pages/DesktopWidget";
+import { MobileDashboard } from "./pages/MobileDashboard";
 
 function Router() {
   return (
@@ -35,6 +36,7 @@ function Router() {
       <Route path={"/design-templates"} component={DesignTemplates} />
       <Route path={"/approval/:token"} component={ApprovalPage} />
       <Route path={"/widget"} component={DesktopWidget} />
+      <Route path={"/mobile"} component={MobileDashboard} />
 
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
