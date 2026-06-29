@@ -18,7 +18,10 @@ import {
   Settings,
   Grid3x3,
   X,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Facebook,
+  Instagram,
+  Twitter
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
@@ -59,8 +62,21 @@ const DESIGN_CATEGORIES = [
   'Photo Prints'
 ];
 
+const SOCIAL_PLATFORMS = {
+  'Facebook': { width: 1200, height: 628, description: 'Facebook Cover Photo (1200x628px)' },
+  'Instagram': { width: 1080, height: 1080, description: 'Instagram Post (1080x1080px)' },
+  'Instagram Story': { width: 1080, height: 1920, description: 'Instagram Story (1080x1920px)' },
+  'CashApp': { width: 400, height: 400, description: 'CashApp Profile (400x400px)' },
+  'Twitter': { width: 1024, height: 512, description: 'Twitter Header (1024x512px)' },
+  'TikTok': { width: 1080, height: 1920, description: 'TikTok Video Cover (1080x1920px)' },
+  'LinkedIn': { width: 1200, height: 627, description: 'LinkedIn Cover (1200x627px)' },
+  'YouTube': { width: 2560, height: 1440, description: 'YouTube Banner (2560x1440px)' },
+  'Snapchat': { width: 1080, height: 1920, description: 'Snapchat Geofilter (1080x1920px)' },
+  'Pinterest': { width: 1000, height: 1500, description: 'Pinterest Pin (1000x1500px)' }
+};
+
 export default function DesignTemplates() {
-  const [activeTab, setActiveTab] = useState<'create' | 'gallery'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'gallery' | 'social'>('create');
   const [selectedCategory, setSelectedCategory] = useState('Vehicle Wrap');
   const [selectedStyle, setSelectedStyle] = useState('Modern Minimalist');
   const [designPrompt, setDesignPrompt] = useState('');
@@ -79,9 +95,20 @@ export default function DesignTemplates() {
   const [referenceImages, setReferenceImages] = useState<{ url: string; mimeType: string }[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<keyof typeof SOCIAL_PLATFORMS>('Instagram');
+  const [socialDesignPrompt, setSocialDesignPrompt] = useState('');
+  const [socialCompanyName, setSocialCompanyName] = useState('');
+  const [socialPhoneNumber, setSocialPhoneNumber] = useState('');
+  const [socialWebsite, setSocialWebsite] = useState('');
+  const [socialReferenceImages, setSocialReferenceImages] = useState<{ url: string; mimeType: string }[]>([]);
+  const [isGeneratingSocial, setIsGeneratingSocial] = useState(false);
+  const [generatedSocialDesigns, setGeneratedSocialDesigns] = useState<{ main: string; variations: string[] } | null>(null);
+  const [socialTemplateName, setSocialTemplateName] = useState('');
+  const socialFileInputRef = useRef<HTMLInputElement>(null);
 
   const designMutation = trpc.design.generateDesign.useMutation();
   const stylesList = Object.keys(DESIGN_STYLES);
+  const platformsList = Object.keys(SOCIAL_PLATFORMS) as Array<keyof typeof SOCIAL_PLATFORMS>;
 
   const handleAddReferenceImages = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -117,6 +144,99 @@ export default function DesignTemplates() {
 
   const handleRemoveReferenceImage = (index: number) => {
     setReferenceImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddSocialReferenceImages = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) {
+          toast.error(`${file.name} is not an image file`);
+          continue;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          setSocialReferenceImages(prev => [...prev, {
+            url: result,
+            mimeType: file.type
+          }]);
+        };
+        reader.readAsDataURL(file);
+      }
+      toast.success(`Added ${files.length} reference image(s)`);
+    } catch (error) {
+      toast.error('Failed to add reference images');
+    } finally {
+      if (socialFileInputRef.current) socialFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveSocialReferenceImage = (index: number) => {
+    setSocialReferenceImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleGenerateSocialDesign = async () => {
+    if (!socialDesignPrompt.trim()) {
+      toast.error('Please describe your design concept');
+      return;
+    }
+    setIsGeneratingSocial(true);
+    try {
+      const platform = SOCIAL_PLATFORMS[selectedPlatform];
+      const result = await designMutation.mutateAsync({
+        category: 'Social Media',
+        style: selectedStyle,
+        prompt: `${socialDesignPrompt}\n\nOptimized for ${selectedPlatform} (${platform.width}x${platform.height}px). ${platform.description}`,
+        companyName: socialCompanyName || undefined,
+        phoneNumber: socialPhoneNumber || undefined,
+        website: socialWebsite || undefined,
+        referenceImages: socialReferenceImages.length > 0 ? socialReferenceImages : undefined,
+        variations: 1,
+        resolution: 'high'
+      });
+      setGeneratedSocialDesigns({
+        main: result.mainDesign,
+        variations: result.variations ? result.variations.filter(Boolean) : []
+      });
+      toast.success('Social media design generated! 🎨');
+    } catch (error) {
+      toast.error('Failed to generate design. Try again.');
+      console.error(error);
+    } finally {
+      setIsGeneratingSocial(false);
+    }
+  };
+
+  const handleSaveSocialTemplate = () => {
+    if (!socialTemplateName.trim() || !generatedSocialDesigns) {
+      toast.error('Please name your template and generate a design');
+      return;
+    }
+    const newTemplate: Template = {
+      id: `template-${Date.now()}`,
+      name: socialTemplateName,
+      category: `Social Media - ${selectedPlatform}`,
+      style: selectedStyle,
+      description: socialDesignPrompt,
+      mainDesign: generatedSocialDesigns.main,
+      variations: generatedSocialDesigns.variations,
+      createdAt: new Date(),
+      likes: 0,
+      isLiked: false,
+      createdBy: 'You',
+      sharedWith: []
+    };
+    setSavedTemplates([newTemplate, ...savedTemplates]);
+    toast.success('Template saved! 🎉');
+    setSocialTemplateName('');
+    setSocialDesignPrompt('');
+    setGeneratedSocialDesigns(null);
+    setSocialCompanyName('');
+    setSocialPhoneNumber('');
+    setSocialWebsite('');
+    setSocialReferenceImages([]);
   };
 
   const handleGenerateDesign = async () => {
@@ -221,6 +341,7 @@ export default function DesignTemplates() {
   };
 
   const currentDesignImage = selectedVariation >= 0 && generatedDesigns?.variations[selectedVariation] ? generatedDesigns.variations[selectedVariation] : generatedDesigns?.main;
+  const currentSocialDesignImage = generatedSocialDesigns?.main;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/20 to-black text-foreground">
@@ -240,7 +361,7 @@ export default function DesignTemplates() {
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setActiveTab('create')}
               className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
@@ -251,6 +372,17 @@ export default function DesignTemplates() {
             >
               <Plus className="h-4 w-4 inline mr-2" />
               Create New
+            </button>
+            <button
+              onClick={() => setActiveTab('social')}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                activeTab === 'social'
+                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                  : 'bg-white/5 text-muted-foreground hover:bg-white/10'
+              }`}
+            >
+              <Share2 className="h-4 w-4 inline mr-2" />
+              Social Media
             </button>
             <button
               onClick={() => setActiveTab('gallery')}
@@ -269,7 +401,233 @@ export default function DesignTemplates() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-        {activeTab === 'create' ? (
+        {activeTab === 'social' ? (
+          // Social Media Tab
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left: Input Form */}
+            <div className="space-y-6">
+              <Card className="bg-white/5 border-white/10">
+                <CardContent className="p-6 space-y-6">
+                  {/* Platform Select */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-3">Social Platform</label>
+                    <select
+                      value={selectedPlatform}
+                      onChange={(e) => setSelectedPlatform(e.target.value as keyof typeof SOCIAL_PLATFORMS)}
+                      className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-foreground focus:outline-none focus:border-purple-500/50"
+                    >
+                      {platformsList.map(platform => {
+                        const info = SOCIAL_PLATFORMS[platform];
+                        return (
+                          <option key={platform} value={platform}>
+                            {platform} - {info.width}x{info.height}px
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {SOCIAL_PLATFORMS[selectedPlatform].description}
+                    </p>
+                  </div>
+
+                  {/* Style Select */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-3">Design Style</label>
+                    <select
+                      value={selectedStyle}
+                      onChange={(e) => setSelectedStyle(e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-foreground focus:outline-none focus:border-purple-500/50"
+                    >
+                      {stylesList.map(style => (
+                        <option key={style} value={style}>{style}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Design Prompt */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-3">Design Concept</label>
+                    <textarea
+                      value={socialDesignPrompt}
+                      onChange={(e) => setSocialDesignPrompt(e.target.value)}
+                      placeholder="Describe your social media design idea... Include colors, elements, mood, and any specific requirements."
+                      className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-foreground placeholder-muted-foreground focus:outline-none focus:border-purple-500/50 resize-none h-24"
+                    />
+                  </div>
+
+                  {/* Reference Images Section */}
+                  <div className="space-y-3 p-3 bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-lg border border-purple-500/20">
+                    <label className="block text-sm font-semibold text-purple-300 flex items-center gap-2">
+                      <ImageIcon className="h-4 w-4" />
+                      Reference Images (Optional)
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Add photos of your brand, products, or any reference images to help AI generate better social media designs
+                    </p>
+                    
+                    {/* Reference Images Preview */}
+                    {socialReferenceImages.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {socialReferenceImages.map((img, idx) => (
+                          <div key={idx} className="relative group">
+                            <img
+                              src={img.url}
+                              alt={`reference-${idx}`}
+                              className="w-full h-20 object-cover rounded-lg"
+                            />
+                            <button
+                              onClick={() => handleRemoveSocialReferenceImage(idx)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Upload Button */}
+                    <Button
+                      onClick={() => socialFileInputRef.current?.click()}
+                      variant="outline"
+                      className="w-full border-purple-500/30 hover:bg-purple-500/10 text-purple-300 gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Add Reference Images
+                    </Button>
+                    <input
+                      ref={socialFileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => handleAddSocialReferenceImages(e.target.files)}
+                      className="hidden"
+                    />
+                    
+                    {socialReferenceImages.length > 0 && (
+                      <p className="text-xs text-purple-300 font-semibold">
+                        {socialReferenceImages.length} image{socialReferenceImages.length > 1 ? 's' : ''} added
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Business Info */}
+                  <div className="space-y-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                    <label className="block text-xs font-semibold text-muted-foreground">Business Information (Optional)</label>
+                    <Input
+                      value={socialCompanyName}
+                      onChange={(e) => setSocialCompanyName(e.target.value)}
+                      placeholder="Company Name"
+                      className="bg-white/10 border-white/20 text-xs"
+                    />
+                    <Input
+                      value={socialPhoneNumber}
+                      onChange={(e) => setSocialPhoneNumber(e.target.value)}
+                      placeholder="Phone Number"
+                      className="bg-white/10 border-white/20 text-xs"
+                    />
+                    <Input
+                      value={socialWebsite}
+                      onChange={(e) => setSocialWebsite(e.target.value)}
+                      placeholder="Website"
+                      className="bg-white/10 border-white/20 text-xs"
+                    />
+                  </div>
+
+                  {/* Generate Button */}
+                  <Button
+                    onClick={handleGenerateSocialDesign}
+                    disabled={isGeneratingSocial || designMutation.isPending}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 rounded-lg gap-2"
+                  >
+                    {isGeneratingSocial || designMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-4 w-4" />
+                        Generate Social Design
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right: Preview & Actions */}
+            <div className="space-y-6">
+              {generatedSocialDesigns ? (
+                <>
+                  {/* Design Preview */}
+                  <Card className="bg-white/5 border-white/10 overflow-hidden">
+                    <div className="aspect-square bg-black/50 flex items-center justify-center">
+                      {currentSocialDesignImage ? (
+                        <img
+                          src={currentSocialDesignImage}
+                          alt="Generated Social Design"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center text-muted-foreground">
+                          <Zap className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                          <p>No design generated</p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => handleDownloadTemplate(currentSocialDesignImage || '', socialTemplateName || 'social-design', 'png')}
+                        className="bg-green-600 hover:bg-green-700 gap-2"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </Button>
+                      <Button
+                        onClick={handleGenerateSocialDesign}
+                        disabled={isGeneratingSocial}
+                        variant="outline"
+                        className="gap-2"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                        Regenerate
+                      </Button>
+                    </div>
+
+                    {/* Save Template */}
+                    <div className="space-y-2">
+                      <Input
+                        value={socialTemplateName}
+                        onChange={(e) => setSocialTemplateName(e.target.value)}
+                        placeholder="Template name..."
+                        className="bg-white/10 border-white/20"
+                      />
+                      <Button
+                        onClick={handleSaveSocialTemplate}
+                        className="w-full bg-purple-600 hover:bg-purple-700 gap-2"
+                      >
+                        <Save className="h-4 w-4" />
+                        Save as Template
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <Card className="bg-white/5 border-white/10 p-8 text-center">
+                  <Share2 className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p className="text-muted-foreground">
+                    Fill in the form and click "Generate Social Design" to create your post
+                  </p>
+                </Card>
+              )}
+            </div>
+          </div>
+        ) : activeTab === 'create' ? (
           // Create Tab
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left: Input Form */}
