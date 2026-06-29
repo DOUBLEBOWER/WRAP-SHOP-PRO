@@ -14,6 +14,7 @@ import TeamPortal from "./pages/TeamPortal";
 import StickerGenerator from "./pages/StickerGenerator";
 import WrapDesigner from "./pages/WrapDesigner";
 import DesignTemplates from "./pages/DesignTemplates";
+import { ApprovalPage } from "./pages/ApprovalPage";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <Route path={"/sticker-designer"} component={StickerGenerator} />
       <Route path={"/wrap-designer"} component={WrapDesigner} />
       <Route path={"/design-templates"} component={DesignTemplates} />
+      <Route path={"/approval/:token"} component={ApprovalPage} />
 
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />

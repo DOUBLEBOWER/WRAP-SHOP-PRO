@@ -127,3 +127,23 @@ export const portfolioItems = mysqlTable("portfolio_items", {
 
 export type PortfolioItem = typeof portfolioItems.$inferSelect;
 export type InsertPortfolioItem = typeof portfolioItems.$inferInsert;
+
+
+// ─── Design Approvals: Simple Workflow ───────────────────────────────────────
+export const designApprovals = mysqlTable("design_approvals", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  dealId: varchar("dealId", { length: 64 }).notNull(),
+  designImageUrl: text("designImageUrl").notNull(),
+  designName: varchar("designName", { length: 255 }).notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected", "revisions_requested"]).notNull().default("pending"),
+  clientEmail: varchar("clientEmail", { length: 320 }).notNull(),
+  clientName: varchar("clientName", { length: 255 }).notNull(),
+  approvalToken: varchar("approvalToken", { length: 255 }).notNull().unique(),
+  feedback: text("feedback"),
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DesignApproval = typeof designApprovals.$inferSelect;
+export type InsertDesignApproval = typeof designApprovals.$inferInsert;

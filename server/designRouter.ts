@@ -1,6 +1,9 @@
 import { z } from 'zod';
-import { publicProcedure, router } from './_core/trpc';
+import { publicProcedure, protectedProcedure, router } from './_core/trpc';
 import { generateImage } from './_core/imageGeneration';
+import { getDb } from './db';
+import { designApprovals } from '../drizzle/schema';
+import { eq } from 'drizzle-orm';
 
 const DESIGN_STYLES = {
   'Modern Minimalist': 'Clean, modern design with minimal text, bold geometric shapes, sans-serif typography, flat colors',
@@ -161,5 +164,75 @@ IMPORTANT: Generate a single, cohesive, professional design that meets all requi
     }),
 
   getStyles: publicProcedure.query(() => DESIGN_STYLES),
-  getCategories: publicProcedure.query(() => DESIGN_CATEGORIES)
+  getCategories: publicProcedure.query(() => DESIGN_CATEGORIES),
+
+  submitForApproval: protectedProcedure
+    .input(
+      z.object({
+        dealId: z.string(),
+        designImageUrl: z.string(),
+        designName: z.string(),
+        clientEmail: z.string().email(),
+        clientName: z.string()
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error('Database connection failed');
+      
+      const approvalId = `approval-${Date.now()}`;
+      const approvalToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      
+      await db.insert(designApprovals).values({
+        id: approvalId,
+        dealId: input.dealId,
+        designImageUrl: input.designImageUrl,
+        designName: input.designName,
+        status: 'pending',
+        clientEmail: input.clientEmail,
+        clientName: input.clientName,
+        approvalToken,
+        createdBy: ctx.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      return { approvalId, approvalToken };
+    }),
+
+  getApprovalByToken: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error('Database connection failed');
+      
+      const approval = await db.select().from(designApprovals).where(eq(designApprovals.approvalToken, input.token)).limit(1);
+      if (approval.length === 0) throw new Error('Approval not found');
+      return approval[0];
+
+
+    }),
+
+  updateApprovalStatus: publicProcedure
+    .input(
+      z.object({
+        token: z.string(),
+        status: z.enum(['approved', 'rejected', 'revisions_requested']),
+        feedback: z.string().optional()
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error('Database connection failed');
+      
+      await db.update(designApprovals)
+        .set({
+          status: input.status,
+          feedback: input.feedback,
+          updatedAt: new Date()
+        })
+        .where(eq(designApprovals.approvalToken, input.token));
+
+      return { success: true };
+    })
 });

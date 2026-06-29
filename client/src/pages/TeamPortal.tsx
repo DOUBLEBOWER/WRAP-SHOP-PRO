@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { INITIAL_DEALS, INITIAL_CUSTOMERS, Deal, STAGES } from '../const';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,6 +67,10 @@ export default function TeamPortal() {
       setPin('');
       setPinError(false);
       toast.success(`Welcome back, ${selectedMember.name}!`);
+      // Redirect to CRM after successful login
+      setTimeout(() => {
+        window.location.href = '/crm';
+      }, 1000);
     } else {
       setPinError(true);
       setPin('');

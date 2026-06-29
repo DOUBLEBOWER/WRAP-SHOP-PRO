@@ -15,6 +15,20 @@
       "when": 1782693060789,
       "tag": "0001_small_kid_colt",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1782710877312,
+      "tag": "0002_serious_jean_grey",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1782711105364,
+      "tag": "0003_whole_slayback",
+      "breakpoints": true
     }
   ]
 }
