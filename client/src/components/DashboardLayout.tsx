@@ -12,7 +12,8 @@ import {
   MessageSquare,
   ShoppingBag,
   Image as ImageIcon,
-  BookOpen
+  BookOpen,
+  Zap
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -105,6 +106,13 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
           >
             <Users className="h-4 w-4" />
             Team Login Portal
+          </button>
+          <button
+            onClick={() => window.open('/widget', '_blank')}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500/10 to-orange-500/5 border border-amber-500/20 text-amber-400 hover:from-amber-500/20 hover:to-orange-500/10 transition-all"
+          >
+            <Zap className="h-4 w-4" />
+            Desktop Widget
           </button>
         </div>
 
