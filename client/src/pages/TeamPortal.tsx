@@ -63,22 +63,19 @@ export default function TeamPortal() {
     e.preventDefault();
     if (!selectedMember) return;
     if (pin === selectedMember.pin) {
+      setLoggedIn(selectedMember);
+      setPin('');
+      setPinError(false);
       toast.success(`Welcome back, ${selectedMember.name}!`);
-      // Redirect to CRM immediately after successful login
-      window.location.href = '/crm';
+      // Redirect to CRM after successful login
+      setTimeout(() => {
+        window.location.href = '/crm';
+      }, 1000);
     } else {
       setPinError(true);
       setPin('');
       toast.error('Incorrect PIN. Please try again.');
     }
-  };
-
-  const handleLogout = () => {
-    setLoggedIn(null);
-    setSelectedJob(null);
-    setSelectedMember(null);
-    setPin('');
-    setPinError(false);
   };
 
   const handlePostComment = (e: React.FormEvent) => {
