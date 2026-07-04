@@ -17,6 +17,7 @@ import DesignTemplates from "./pages/DesignTemplates";
 import { ApprovalPage } from "./pages/ApprovalPage";
 import { DesktopWidget } from "./pages/DesktopWidget";
 import { MobileDashboard } from "./pages/MobileDashboard";
+import { PWAInstallBanner } from "./components/PWAInstallBanner";
 
 function Router() {
   return (
@@ -51,6 +52,7 @@ function App() {
         <NotificationProvider>
           <PortfolioProvider>
             <TooltipProvider>
+              <PWAInstallBanner />
               <Toaster />
               <Router />
             </TooltipProvider>
