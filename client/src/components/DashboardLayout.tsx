@@ -108,6 +108,13 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
             Team Login Portal
           </button>
           <button
+            onClick={() => window.open('/team-management', '_blank')}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-500/10 to-purple-500/5 border border-indigo-500/20 text-indigo-400 hover:from-indigo-500/20 hover:to-purple-500/10 transition-all"
+          >
+            <Users className="h-4 w-4" />
+            Manage Team Members
+          </button>
+          <button
             onClick={() => window.open('/widget', '_blank')}
             className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500/10 to-orange-500/5 border border-amber-500/20 text-amber-400 hover:from-amber-500/20 hover:to-orange-500/10 transition-all"
           >

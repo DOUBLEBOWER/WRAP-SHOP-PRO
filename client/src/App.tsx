@@ -18,6 +18,7 @@ import { ApprovalPage } from "./pages/ApprovalPage";
 import { DesktopWidget } from "./pages/DesktopWidget";
 import { MobileDashboard } from "./pages/MobileDashboard";
 import { PWAInstallBanner } from "./components/PWAInstallBanner";
+import TeamManagement from "./pages/TeamManagement";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
       <Route path={"/store"} component={Store} />
       <Route path={"/book"} component={Booking} />
       <Route path={"/team"} component={TeamPortal} />
+      <Route path={"/team-management"} component={TeamManagement} />
       <Route path={"/sticker-designer"} component={StickerGenerator} />
       <Route path={"/wrap-designer"} component={WrapDesigner} />
       <Route path={"/design-templates"} component={DesignTemplates} />
