@@ -298,3 +298,5 @@ export function MobileDashboard() {
     </div>
   );
 }
+
+export default MobileDashboard;

@@ -193,3 +193,5 @@ export function DesktopWidget() {
     </div>
   );
 }
+
+export default DesktopWidget;
