@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,9 +11,11 @@ import {
   Edit2,
   ArrowLeft,
   Check,
-  X
+  X,
+  Loader
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trpc } from '@/lib/trpc';
 
 interface TeamMember {
   id: string;
@@ -23,23 +25,20 @@ interface TeamMember {
 }
 
 export default function TeamManagement() {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    { id: 'emp_0', name: 'Stephanie', role: 'Manager', pin: '5555' },
-    { id: 'emp_1', name: 'Sarah Johnson', role: 'Designer', pin: '1111' },
-    { id: 'emp_2', name: 'Dave Martinez', role: 'Print Tech', pin: '2222' },
-    { id: 'emp_3', name: 'Mike Thompson', role: 'Installer', pin: '3333' },
-    { id: 'emp_4', name: 'Chris Davis', role: 'Detailer', pin: '4444' },
-    { id: 'emp_5', name: 'All-Pro Owner', role: 'Manager', pin: '0000' }
-  ]);
-
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newMember, setNewMember] = useState({ name: '', role: 'Installer', pin: '' });
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
+  // tRPC queries and mutations
+  const { data: teamMembers = [], isLoading, refetch } = trpc.team.list.useQuery();
+  const createMutation = trpc.team.create.useMutation();
+  const updateMutation = trpc.team.update.useMutation();
+  const deleteMutation = trpc.team.delete.useMutation();
+
   const roles = ['Manager', 'Designer', 'Print Tech', 'Installer', 'Detailer'];
 
-  const handleAddMember = () => {
+  const handleAddMember = async () => {
     if (!newMember.name.trim() || !newMember.pin.trim()) {
       toast.error('Please fill in all fields');
       return;
@@ -50,24 +49,32 @@ export default function TeamManagement() {
       return;
     }
 
-    const member: TeamMember = {
-      id: `emp_${Date.now()}`,
-      name: newMember.name,
-      role: newMember.role,
-      pin: newMember.pin
-    };
-
-    setTeamMembers([...teamMembers, member]);
-    setNewMember({ name: '', role: 'Installer', pin: '' });
-    setIsAdding(false);
-    toast.success(`${member.name} added successfully!`);
+    try {
+      await createMutation.mutateAsync({
+        name: newMember.name,
+        role: newMember.role,
+        pin: newMember.pin
+      });
+      setNewMember({ name: '', role: 'Installer', pin: '' });
+      setIsAdding(false);
+      toast.success(`${newMember.name} added successfully!`);
+      refetch();
+    } catch (error) {
+      toast.error('Failed to add team member');
+      console.error(error);
+    }
   };
 
-  const handleDeleteMember = (id: string) => {
-    const member = teamMembers.find(m => m.id === id);
-    if (window.confirm(`Delete ${member?.name}? This cannot be undone.`)) {
-      setTeamMembers(teamMembers.filter(m => m.id !== id));
-      toast.success(`${member?.name} removed`);
+  const handleDeleteMember = async (id: string, name: string) => {
+    if (window.confirm(`Delete ${name}? This cannot be undone.`)) {
+      try {
+        await deleteMutation.mutateAsync({ id });
+        toast.success(`${name} removed`);
+        refetch();
+      } catch (error) {
+        toast.error('Failed to delete team member');
+        console.error(error);
+      }
     }
   };
 
@@ -76,7 +83,7 @@ export default function TeamManagement() {
     setEditingMember({ ...member });
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingMember) return;
 
     if (!editingMember.name.trim() || !editingMember.pin.trim()) {
@@ -89,16 +96,35 @@ export default function TeamManagement() {
       return;
     }
 
-    setTeamMembers(teamMembers.map(m => m.id === editingId ? editingMember : m));
-    setEditingId(null);
-    setEditingMember(null);
-    toast.success('Team member updated!');
+    try {
+      await updateMutation.mutateAsync({
+        id: editingMember.id,
+        name: editingMember.name,
+        role: editingMember.role,
+        pin: editingMember.pin
+      });
+      setEditingId(null);
+      setEditingMember(null);
+      toast.success('Team member updated!');
+      refetch();
+    } catch (error) {
+      toast.error('Failed to update team member');
+      console.error(error);
+    }
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingMember(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex items-center justify-center">
+        <Loader className="w-8 h-8 animate-spin text-cyan-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
@@ -169,10 +195,11 @@ export default function TeamManagement() {
               <div className="flex gap-2">
                 <Button
                   onClick={handleAddMember}
+                  disabled={createMutation.isPending}
                   className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                 >
                   <Check className="w-4 h-4 mr-2" />
-                  Add Member
+                  {createMutation.isPending ? 'Adding...' : 'Add Member'}
                 </Button>
                 <Button
                   onClick={() => {
@@ -244,10 +271,11 @@ export default function TeamManagement() {
                       <div className="flex gap-2">
                         <Button
                           onClick={handleSaveEdit}
+                          disabled={updateMutation.isPending}
                           className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                         >
                           <Check className="w-4 h-4 mr-2" />
-                          Save
+                          {updateMutation.isPending ? 'Saving...' : 'Save'}
                         </Button>
                         <Button
                           onClick={handleCancelEdit}
@@ -279,7 +307,8 @@ export default function TeamManagement() {
                           <Edit2 className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => handleDeleteMember(member.id)}
+                          onClick={() => handleDeleteMember(member.id, member.name)}
+                          disabled={deleteMutation.isPending}
                           size="sm"
                           className="bg-red-600 hover:bg-red-700 text-white"
                         >
@@ -304,6 +333,7 @@ export default function TeamManagement() {
             <p>• Each team member gets full access to the CRM after login</p>
             <p>• Edit or delete team members anytime</p>
             <p>• Keep PINs simple but unique for each person</p>
+            <p>• All changes are saved to the database automatically</p>
           </CardContent>
         </Card>
       </div>

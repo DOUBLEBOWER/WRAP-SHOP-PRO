@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, teamMembers, InsertTeamMember, TeamMember } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -90,3 +90,87 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // TODO: add feature queries here as your schema grows.
+
+// ─── Team Members ────────────────────────────────────────────────────────
+export async function getAllTeamMembers(): Promise<TeamMember[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get team members: database not available");
+    return [];
+  }
+
+  try {
+    const result = await db.select().from(teamMembers).where(eq(teamMembers.isActive, true));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get team members:", error);
+    return [];
+  }
+}
+
+export async function createTeamMember(member: InsertTeamMember): Promise<TeamMember | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create team member: database not available");
+    return null;
+  }
+
+  try {
+    await db.insert(teamMembers).values(member);
+    const result = await db.select().from(teamMembers).where(eq(teamMembers.id, member.id)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to create team member:", error);
+    throw error;
+  }
+}
+
+export async function updateTeamMember(id: string, updates: Partial<InsertTeamMember>): Promise<TeamMember | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update team member: database not available");
+    return null;
+  }
+
+  try {
+    await db.update(teamMembers).set(updates).where(eq(teamMembers.id, id));
+    const result = await db.select().from(teamMembers).where(eq(teamMembers.id, id)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to update team member:", error);
+    throw error;
+  }
+}
+
+export async function deleteTeamMember(id: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete team member: database not available");
+    return false;
+  }
+
+  try {
+    // Soft delete by marking as inactive
+    await db.update(teamMembers).set({ isActive: false }).where(eq(teamMembers.id, id));
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to delete team member:", error);
+    throw error;
+  }
+}
+
+export async function getTeamMemberByPin(pin: string): Promise<TeamMember | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get team member: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.select().from(teamMembers).where(eq(teamMembers.pin, pin)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to get team member by PIN:", error);
+    return null;
+  }
+}

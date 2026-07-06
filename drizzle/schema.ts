@@ -147,3 +147,18 @@ export const designApprovals = mysqlTable("design_approvals", {
 
 export type DesignApproval = typeof designApprovals.$inferSelect;
 export type InsertDesignApproval = typeof designApprovals.$inferInsert;
+
+
+// ─── Team Members ────────────────────────────────────────────────────────────
+export const teamMembers = mysqlTable("team_members", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  role: varchar("role", { length: 64 }).notNull(),
+  pin: varchar("pin", { length: 64 }).notNull(),
+  isActive: boolean("isActive").notNull().default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type InsertTeamMember = typeof teamMembers.$inferInsert;
