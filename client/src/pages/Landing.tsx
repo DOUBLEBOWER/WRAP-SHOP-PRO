@@ -554,7 +554,7 @@ export default function Landing() {
             <p className="leading-relaxed max-w-xs">
               Premium vehicle wraps, custom apparel, storefront graphics, hydro dipping, and more. Serving Tulsa and the surrounding area since 2014.
             </p>
-            <p className="font-mono text-cyan-400 font-bold">(918) 555-0199</p>
+            <p className="font-mono text-cyan-400 font-bold">(918) 525-1589</p>
           </div>
 
           <div className="space-y-2">
