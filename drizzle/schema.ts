@@ -162,3 +162,54 @@ export const teamMembers = mysqlTable("team_members", {
 
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = typeof teamMembers.$inferInsert;
+
+
+// ─── White-Label: Tenant Accounts ──────────────────────────────────────────────
+export const tenants = mysqlTable("tenants", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  businessName: varchar("businessName", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  phone: varchar("phone", { length: 64 }),
+  website: varchar("website", { length: 255 }),
+  logoUrl: text("logoUrl"), // S3 URL
+  logoKey: varchar("logoKey", { length: 255 }), // S3 storage key
+  primaryColor: varchar("primaryColor", { length: 7 }).default("#0891b2"), // Hex color
+  secondaryColor: varchar("secondaryColor", { length: 7 }).default("#ec4899"),
+  invoiceTemplate: json("invoiceTemplate"), // Custom invoice settings
+  subscriptionStatus: mysqlEnum("subscriptionStatus", ["trial", "active", "paused", "canceled"]).default("trial").notNull(),
+  subscriptionPlan: varchar("subscriptionPlan", { length: 32 }).default("starter").notNull(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  trialEndsAt: timestamp("trialEndsAt"),
+  renewalDate: timestamp("renewalDate"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Tenant = typeof tenants.$inferSelect;
+export type InsertTenant = typeof tenants.$inferInsert;
+
+// ─── White-Label: Tenant Users ────────────────────────────────────────────────
+export const tenantUsers = mysqlTable("tenant_users", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull(),
+  userId: int("userId").notNull(),
+  role: mysqlEnum("role", ["owner", "admin", "user"]).default("user").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type TenantUser = typeof tenantUsers.$inferSelect;
+export type InsertTenantUser = typeof tenantUsers.$inferInsert;
+
+// ─── White-Label: Tenant Settings ─────────────────────────────────────────────
+export const tenantSettings = mysqlTable("tenant_settings", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  tenantId: varchar("tenantId", { length: 64 }).notNull().unique(),
+  taxRate: decimal("taxRate", { precision: 5, scale: 2 }).default("8.5").notNull(),
+  currency: varchar("currency", { length: 3 }).default("USD").notNull(),
+  invoicePrefix: varchar("invoicePrefix", { length: 16 }).default("INV").notNull(),
+  invoiceStartNumber: int("invoiceStartNumber").default(1000).notNull(),
+  notificationEmail: varchar("notificationEmail", { length: 320 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type TenantSettings = typeof tenantSettings.$inferSelect;
+export type InsertTenantSettings = typeof tenantSettings.$inferInsert;

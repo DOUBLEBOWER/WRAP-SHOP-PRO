@@ -19,6 +19,7 @@ import { DesktopWidget } from "./pages/DesktopWidget";
 import { MobileDashboard } from "./pages/MobileDashboard";
 import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import TeamManagement from "./pages/TeamManagement";
+import Pricing from "./pages/Pricing";
 
 function Router() {
   return (
@@ -40,6 +41,7 @@ function Router() {
       <Route path={"/approval/:token"} component={ApprovalPage} />
       <Route path={"/widget"} component={DesktopWidget} />
       <Route path={"/mobile"} component={MobileDashboard} />
+      <Route path={"/pricing"} component={Pricing} />
 
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
