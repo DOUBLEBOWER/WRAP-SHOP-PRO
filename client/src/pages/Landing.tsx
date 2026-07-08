@@ -448,8 +448,8 @@ export default function Landing() {
             <div className="space-y-4">
               {[
                 { icon: <Phone className="h-4 w-4 text-pink-400" />, label: 'Phone', value: '(918) 525-1589' },
-                { icon: <Mail className="h-4 w-4 text-cyan-400" />, label: 'Email', value: 'design@coast2coast.com' },
-                { icon: <MapPin className="h-4 w-4 text-purple-400" />, label: 'Studio', value: '5812 E 11th St, Tulsa, OK 74112' }
+                { icon: <Mail className="h-4 w-4 text-cyan-400" />, label: 'Email', value: '918WRAPZ@GMAIL.COM' },
+                { icon: <MapPin className="h-4 w-4 text-purple-400" />, label: 'Studio', value: '10108 East 50th Place, Tulsa, OK 74126' }
               ].map(item => (
                 <div key={item.label} className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5">
                   {item.icon}
