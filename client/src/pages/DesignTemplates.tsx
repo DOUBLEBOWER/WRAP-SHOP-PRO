@@ -131,15 +131,27 @@ export default function DesignTemplates() {
           continue;
         }
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+          const response = await fetch('/api/upload-reference-image', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
+          
+          if (!response.ok) throw new Error('Upload failed');
+          const data = await response.json();
+          
           setReferenceImages(prev => [...prev, {
-            url: result,
+            url: data.url,
             mimeType: file.type
           }]);
-        };
-        reader.readAsDataURL(file);
+        } catch (uploadError) {
+          toast.error(`Failed to upload ${file.name}`);
+          console.error(uploadError);
+        }
       }
       toast.success(`Added ${files.length} reference image(s)`);
     } catch (error) {
