@@ -128,6 +128,13 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
             <Users className="h-4 w-4" />
             Mobile Dashboard
           </button>
+          <button
+            onClick={() => window.open('/poster-designer', '_blank')}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-500/10 to-red-500/5 border border-orange-500/20 text-orange-400 hover:from-orange-500/20 hover:to-red-500/10 transition-all"
+          >
+            <Zap className="h-4 w-4" />
+            Poster Designer 2.0
+          </button>
         </div>
 
         {/* Sidebar Footer / Business Status */}

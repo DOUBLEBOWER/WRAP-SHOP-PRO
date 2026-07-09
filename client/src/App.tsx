@@ -14,6 +14,7 @@ import TeamPortal from "./pages/TeamPortal";
 import StickerGenerator from "./pages/StickerGenerator";
 import WrapDesigner from "./pages/WrapDesigner";
 import DesignTemplates from "./pages/DesignTemplates";
+import PosterDesigner from "./pages/PosterDesigner";
 import { ApprovalPage } from "./pages/ApprovalPage";
 import { DesktopWidget } from "./pages/DesktopWidget";
 import { MobileDashboard } from "./pages/MobileDashboard";
@@ -38,6 +39,7 @@ function Router() {
       <Route path={"/sticker-designer"} component={StickerGenerator} />
       <Route path={"/wrap-designer"} component={WrapDesigner} />
       <Route path={"/design-templates"} component={DesignTemplates} />
+      <Route path={"/poster-designer"} component={PosterDesigner} />
       <Route path={"/approval/:token"} component={ApprovalPage} />
       <Route path={"/widget"} component={DesktopWidget} />
       <Route path={"/mobile"} component={MobileDashboard} />
