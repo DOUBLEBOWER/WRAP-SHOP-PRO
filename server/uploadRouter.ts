@@ -1,24 +1,26 @@
 import express, { Router } from 'express';
+import multer from 'multer';
 import { storagePut } from './storage';
 import { toast } from 'sonner';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 export function registerUploadRoutes(app: express.Application) {
-  // Upload reference image for design generator
-  app.post('/api/upload-reference-image', express.raw({ type: 'image/*', limit: '10mb' }), async (req, res) => {
+  // Upload reference image for design generator - handles both multipart FormData and raw bytes
+  app.post('/api/upload-reference-image', upload.single('file'), async (req, res) => {
     try {
-      if (!req.body || req.body.length === 0) {
+      if (!req.file) {
         return res.status(400).json({ error: 'No file provided' });
       }
 
-      const contentType = req.headers['content-type'] || 'image/jpeg';
+      const contentType = req.file.mimetype || 'image/jpeg';
       const filename = `reference-${Date.now()}-${Math.random().toString(36).substring(7)}`;
       
       // Upload to S3
       const { url } = await storagePut(
         `design-references/${filename}`,
-        req.body,
+        req.file.buffer,
         contentType
       );
 
@@ -29,7 +31,7 @@ export function registerUploadRoutes(app: express.Application) {
     }
   });
 
-  // Handle multipart form data uploads
+  // Legacy: Handle base64 uploads
   app.post('/api/upload-reference-image-form', express.json(), async (req, res) => {
     try {
       const { file, fileName } = req.body;

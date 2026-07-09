@@ -77,6 +77,8 @@ IMPORTANT: Generate a single, cohesive, professional design that meets all requi
       `.trim();
 
       try {
+        console.log('[Design Generator] Starting generation for:', input.category, 'with', input.variations, 'variations');
+        
         // Generate the main design with reference images if provided
         const mainDesign = await generateImage({
           prompt: enhancedPrompt,
@@ -88,12 +90,22 @@ IMPORTANT: Generate a single, cohesive, professional design that meets all requi
             : undefined
         });
 
-        // Generate variations if requested
+        console.log('[Design Generator] Main design generated:', mainDesign.url ? 'success' : 'failed');
+
+        if (!mainDesign.url) {
+          throw new Error('Failed to generate main design image');
+        }
+
+        // Generate variations in parallel (not sequential) to avoid timeout
+        // Cap variations at 2 for large designs to stay under request timeout
+        const maxVariations = Math.min(input.variations - 1, 2);
         const variations: string[] = [];
-        if (input.variations > 1) {
-          for (let i = 1; i < input.variations; i++) {
-            const variationPrompt = `${enhancedPrompt}\n\nCreate a DIFFERENT variation with an alternative layout, color scheme, or composition while keeping the same style and information.`;
-            const variation = await generateImage({
+        
+        if (maxVariations > 0) {
+          console.log('[Design Generator] Generating', maxVariations, 'variations in parallel');
+          const variationPromises = Array.from({ length: maxVariations }, (_, i) => {
+            const variationPrompt = `${enhancedPrompt}\n\nCreate variation ${i + 1}: a DIFFERENT design with an alternative layout, color scheme, or composition while keeping the same style and information.`;
+            return generateImage({
               prompt: variationPrompt,
               originalImages: input.referenceImages && input.referenceImages.length > 0 
                 ? input.referenceImages.map(img => ({
@@ -101,14 +113,22 @@ IMPORTANT: Generate a single, cohesive, professional design that meets all requi
                     mimeType: img.mimeType || 'image/jpeg'
                   }))
                 : undefined
+            }).catch(err => {
+              console.error('[Design Generator] Variation generation failed:', err);
+              return { url: '' };
             });
-            if (variation.url) variations.push(variation.url);
-          }
+          });
+          
+          const variationResults = await Promise.all(variationPromises);
+          variationResults.forEach(result => {
+            if (result.url) variations.push(result.url);
+          });
+          console.log('[Design Generator] Generated', variations.length, 'variations');
         }
 
         return {
           success: true,
-          mainDesign: mainDesign.url || '',
+          mainDesign: mainDesign.url,
           variations: variations as string[],
           metadata: {
             category: input.category,
@@ -122,7 +142,8 @@ IMPORTANT: Generate a single, cohesive, professional design that meets all requi
         };
       } catch (error) {
         console.error('[Design Generation Error]', error);
-        throw new Error('Failed to generate design. Please try again.');
+        const errorMessage = error instanceof Error ? error.message : 'Failed to generate design';
+        throw new Error(`Design generation failed: ${errorMessage}. Please try again with fewer variations or smaller reference images.`);
       }
     }),
 
