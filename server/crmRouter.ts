@@ -5,6 +5,7 @@ import { getDb } from "./db";
 import {
   customers, deals, invoices, inventory, calendarEvents, portfolioItems
 } from "../drizzle/schema";
+import { handlePhaseTransition } from "./_core/integrationService";
 
 // ─── CUSTOMERS ────────────────────────────────────────────────────────────────
 
@@ -145,9 +146,36 @@ export const crmRouter = router({
         const db = await getDb();
         if (!db) throw new Error("Database unavailable");
         const { id, value, ...rest } = input;
+
+        // Get the current deal to check for stage changes
+        const currentDealRows = await db.select().from(deals).where(eq(deals.id, id));
+        const oldDeal = currentDealRows[0];
+
         await db.update(deals)
           .set({ ...rest, ...(value !== undefined ? { value: value.toString() } : {}) })
           .where(eq(deals.id, id));
+
+        // If stage changed, trigger notifications
+        if (oldDeal && rest.stage && rest.stage !== oldDeal.stage) {
+          const customerRows = await db.select().from(customers).where(eq(customers.id, oldDeal.customerId));
+          const customerData = customerRows[0];
+
+          // Trigger phase transition notifications asynchronously
+          handlePhaseTransition({
+            dealId: id,
+            dealTitle: oldDeal.title,
+            customerName: customerData?.name || "Unknown Customer",
+            customerEmail: customerData?.email || "",
+            previousStage: oldDeal.stage,
+            newStage: rest.stage,
+            dueDate: rest.dueDate || oldDeal.dueDate,
+            assignedTo: rest.assignedTo || oldDeal.assignedTo,
+            value: value !== undefined ? value : Number(oldDeal.value)
+          }).catch(err => {
+            console.error("[CRM] Phase transition notification failed:", err);
+          });
+        }
+
         return { success: true };
       }),
 
