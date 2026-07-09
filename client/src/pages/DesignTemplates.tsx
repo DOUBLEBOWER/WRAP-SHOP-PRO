@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc';
+import { VEHICLE_LIBRARY, VEHICLE_CATEGORIES, searchVehicles } from '@/data/vehicleLibrary';
 
 interface Template {
   id: string;
@@ -114,9 +115,26 @@ export default function DesignTemplates() {
   const [currentShareTemplateName, setCurrentShareTemplateName] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isSendingSMS, setIsSendingSMS] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<string>('');
+  const [selectedVehicleCategory, setSelectedVehicleCategory] = useState<string>('Truck');
+  const [vehicleSearchQuery, setVehicleSearchQuery] = useState<string>('');
+  const [filteredVehicles, setFilteredVehicles] = useState(VEHICLE_LIBRARY);
 
   const designMutation = trpc.design.generateDesign.useMutation();
   const stylesList = Object.keys(DESIGN_STYLES);
+
+  // Update filtered vehicles when category or search query changes
+  React.useEffect(() => {
+    if (vehicleSearchQuery.trim()) {
+      setFilteredVehicles(searchVehicles(vehicleSearchQuery));
+    } else if (selectedVehicleCategory) {
+      setFilteredVehicles(VEHICLE_LIBRARY.filter(v => v.category === selectedVehicleCategory));
+    } else {
+      setFilteredVehicles(VEHICLE_LIBRARY);
+    }
+  }, [vehicleSearchQuery, selectedVehicleCategory]);
+
+  const selectedVehicleData = selectedVehicle ? VEHICLE_LIBRARY.find(v => v.id === selectedVehicle) : null;
   const platformsList = Object.keys(SOCIAL_PLATFORMS) as Array<keyof typeof SOCIAL_PLATFORMS>;
 
   const handleAddReferenceImages = async (files: FileList | null) => {
