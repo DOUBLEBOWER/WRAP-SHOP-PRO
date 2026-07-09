@@ -213,3 +213,29 @@ export const tenantSettings = mysqlTable("tenant_settings", {
 });
 export type TenantSettings = typeof tenantSettings.$inferSelect;
 export type InsertTenantSettings = typeof tenantSettings.$inferInsert;
+
+
+// ─── Design History & Favorites ────────────────────────────────────────────────
+export const designHistory = mysqlTable("design_history", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  userId: int("userId").notNull(),
+  category: varchar("category", { length: 64 }).notNull(), // Vehicle Wrap, Sticker, Poster, etc.
+  style: varchar("style", { length: 64 }).notNull(), // Modern Minimalist, Neon Cyber, etc.
+  prompt: text("prompt").notNull(), // User's design request
+  companyName: varchar("companyName", { length: 255 }),
+  phoneNumber: varchar("phoneNumber", { length: 64 }),
+  website: varchar("website", { length: 255 }),
+  mainImageUrl: text("mainImageUrl").notNull(), // Generated design image URL
+  mainImageKey: varchar("mainImageKey", { length: 255 }), // S3 storage key
+  variationImageUrls: json("variationImageUrls"), // Array of variation URLs
+  variationImageKeys: json("variationImageKeys"), // Array of S3 storage keys
+  referenceImageUrls: json("referenceImageUrls"), // Reference images used
+  isFavorite: boolean("isFavorite").notNull().default(false),
+  designName: varchar("designName", { length: 255 }), // Custom name given by user
+  notes: text("notes"), // User notes about the design
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DesignHistory = typeof designHistory.$inferSelect;
+export type InsertDesignHistory = typeof designHistory.$inferInsert;

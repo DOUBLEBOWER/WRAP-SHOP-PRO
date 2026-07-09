@@ -1,0 +1,21 @@
+CREATE TABLE `design_history` (
+	`id` varchar(64) NOT NULL,
+	`userId` int NOT NULL,
+	`category` varchar(64) NOT NULL,
+	`style` varchar(64) NOT NULL,
+	`prompt` text NOT NULL,
+	`companyName` varchar(255),
+	`phoneNumber` varchar(64),
+	`website` varchar(255),
+	`mainImageUrl` text NOT NULL,
+	`mainImageKey` varchar(255),
+	`variationImageUrls` json,
+	`variationImageKeys` json,
+	`referenceImageUrls` json,
+	`isFavorite` boolean NOT NULL DEFAULT false,
+	`designName` varchar(255),
+	`notes` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `design_history_id` PRIMARY KEY(`id`)
+);

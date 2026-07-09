@@ -6,6 +6,7 @@ import { stripeRouter } from "./stripeRouter";
 import { wrapRouter } from "./wrapRouter";
 import { crmRouter } from "./crmRouter";
 import { designRouter } from "./designRouter";
+import { designHistoryRouter } from "./designHistoryRouter";
 import { teamRouter } from "./teamRouter";
 
 export const appRouter = router({
@@ -26,6 +27,7 @@ export const appRouter = router({
   wrap: wrapRouter,
   crm: crmRouter,
   design: designRouter,
+  designHistory: designHistoryRouter,
   team: teamRouter,
 
   // TODO: add feature routers here, e.g.

@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, teamMembers, InsertTeamMember, TeamMember } from "../drizzle/schema";
+import { InsertUser, users, teamMembers, InsertTeamMember, TeamMember, designHistory, InsertDesignHistory, DesignHistory } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -150,12 +150,125 @@ export async function deleteTeamMember(id: string): Promise<boolean> {
   }
 
   try {
-    // Soft delete by marking as inactive
-    await db.update(teamMembers).set({ isActive: false }).where(eq(teamMembers.id, id));
+    await db.delete(teamMembers).where(eq(teamMembers.id, id));
     return true;
   } catch (error) {
     console.error("[Database] Failed to delete team member:", error);
+    return false;
+  }
+}
+
+// ─── Design History & Favorites ────────────────────────────────────────────────
+export async function saveDesignToHistory(userId: number, design: Omit<InsertDesignHistory, 'id' | 'userId'>): Promise<DesignHistory | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot save design: database not available");
+    return null;
+  }
+
+  try {
+    const id = `design-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    const designWithId = { ...design, id, userId } as InsertDesignHistory;
+    await db.insert(designHistory).values(designWithId);
+    const result = await db.select().from(designHistory).where(eq(designHistory.id, id)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to save design:", error);
     throw error;
+  }
+}
+
+export async function getUserDesignHistory(userId: number, limit: number = 50): Promise<DesignHistory[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get design history: database not available");
+    return [];
+  }
+
+  try {
+    const result = await db
+      .select()
+      .from(designHistory)
+      .where(eq(designHistory.userId, userId))
+      .orderBy(desc(designHistory.createdAt))
+      .limit(limit);
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get design history:", error);
+    return [];
+  }
+}
+
+export async function getUserFavoriteDesigns(userId: number): Promise<DesignHistory[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get favorite designs: database not available");
+    return [];
+  }
+
+  try {
+    const result = await db
+      .select()
+      .from(designHistory)
+      .where(eq(designHistory.userId, userId) && eq(designHistory.isFavorite, true))
+      .orderBy(desc(designHistory.createdAt));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get favorite designs:", error);
+    return [];
+  }
+}
+
+export async function toggleDesignFavorite(designId: string, isFavorite: boolean): Promise<DesignHistory | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot toggle favorite: database not available");
+    return null;
+  }
+
+  try {
+    await db.update(designHistory).set({ isFavorite }).where(eq(designHistory.id, designId));
+    const result = await db.select().from(designHistory).where(eq(designHistory.id, designId)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to toggle favorite:", error);
+    throw error;
+  }
+}
+
+export async function updateDesignName(designId: string, designName?: string, notes?: string): Promise<DesignHistory | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update design: database not available");
+    return null;
+  }
+
+  try {
+    const updates: Partial<InsertDesignHistory> = {};
+    if (designName !== undefined) updates.designName = designName;
+    if (notes !== undefined) updates.notes = notes;
+    await db.update(designHistory).set(updates).where(eq(designHistory.id, designId));
+    const result = await db.select().from(designHistory).where(eq(designHistory.id, designId)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to update design:", error);
+    throw error;
+  }
+}
+
+export async function deleteDesign(designId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete design: database not available");
+    return false;
+  }
+
+  try {
+    await db.delete(designHistory).where(eq(designHistory.id, designId));
+    return true;
+  } catch (error) {
+    console.error("[Database] Failed to delete design:", error);
+    return false;
   }
 }
 
